@@ -41,8 +41,12 @@ namespace Thrusters
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = vectorColor;
-            Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + thrustNormalized * 2);
+            if (thrustNormalized.x != 0 && thrustNormalized.y != 0 && thrustNormalized.z != 0)
+            {
+                Gizmos.color = vectorColor;
+                Gizmos.DrawSphere(gameObject.transform.position, 0.2f);
+                Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + thrustNormalized * 2);
+            }
         }
 
         public void Shutdown()

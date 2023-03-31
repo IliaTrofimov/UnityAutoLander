@@ -39,6 +39,7 @@ namespace ProximitySensors
             if (float.IsFinite(distance))
             {
                 Gizmos.color = distance <= DangerDistance ? Color.red : Color.white;
+                Gizmos.DrawSphere(gameObject.transform.position, 0.1f);
                 Gizmos.DrawLine(gameObject.transform.position, hitPosition);
             }
         }

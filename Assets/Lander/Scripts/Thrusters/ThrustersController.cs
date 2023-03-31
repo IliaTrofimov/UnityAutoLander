@@ -24,7 +24,7 @@ namespace Thrusters
             foreach (var t in thrusters)
             {
                 var pos = new ThrusterPosition(t.Axis, t.Direction, t.Placement);
-                if (this.thrusters.TryAdd(pos, new List<Thruster>() { t }))
+                if (!this.thrusters.TryAdd(pos, new List<Thruster>() { t }))
                     this.thrusters[pos].Add(t);
             }
         }
@@ -75,6 +75,8 @@ namespace Thrusters
                 Fuel -= t.BaseThrustValue * thrust;
                 if (Fuel > 0)
                     t.Burn(thrust);
+                else
+                    t.Shutdown();
             }  
         }
 
