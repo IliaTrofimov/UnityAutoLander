@@ -4,6 +4,8 @@ using System.Collections;
 using System.Linq;
 
 using Thrusters;
+using Utils;
+using CraftState;
 
 namespace Lander
 {
@@ -26,13 +28,17 @@ namespace Lander
         public bool DrawCenterOfMass = true;
 
         public UnityEvent<MovementInfo> ObjectMovedEvent;
-        public ThrustersController thrustersController;
-        private Rigidbody body;
 
-        void Start()
+        private ThrustersController thrustersController;
+        private BaseState state;
+        private Rigidbody body;
+        private bool isCollided;
+
+        private void Start()
         {
             body = gameObject.GetComponent<Rigidbody>();
             thrustersController = new ThrustersController(GetComponentsInChildren<Thruster>());
+            state = new FlyingState(new MovementInfo() { });
         }
 
         private void Update()
@@ -42,20 +48,49 @@ namespace Lander
         }
 
 
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             float pitch = Input.GetAxis("Horizontal") * RollThrust;
             float roll = Input.GetAxis("Vertical") * PitchThrust;
-            //float yaw = Input.GetAxis("Yaw") * YawThrust;
+            float yaw = Input.GetAxis("Yaw") * YawThrust;
             float up = Input.GetAxis("Jump") * MainThrust;
 
             thrustersController.ApplyMovement(0, up, 0, roll, 0, pitch);
-            ObjectMovedEvent.Invoke(new MovementInfo(body.position, body.transform.eulerAngles, body.velocity, body.angularVelocity));
+
+            var temp = state.NextState(GetMovementInfo());
+            if (temp.GetType() != state.GetType())
+                Debug.Log($"{state} -> {temp}");
+            state = temp;
 
             if (Input.GetKey(KeyCode.LeftShift))
                 body.angularVelocity = new Vector3();
             if (Input.GetKey(KeyCode.LeftControl))
                 body.velocity = new Vector3();
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            isCollided = true;
+        }
+
+        private void OnCollisionExit(Collision collision)
+        {
+            isCollided = false;
+        }
+
+
+
+        private MovementInfo GetMovementInfo()
+        {
+            return new MovementInfo()
+            {
+                Position = body.worldCenterOfMass,
+                Velocity = body.velocity,
+                EulerAngles = body.transform.eulerAngles,
+                AngularVelocity = body.angularVelocity,
+                Height = 0,
+                IsCollided = isCollided
+            };
         }
     }
 
