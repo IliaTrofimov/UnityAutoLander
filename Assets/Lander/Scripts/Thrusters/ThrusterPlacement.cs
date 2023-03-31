@@ -1,4 +1,4 @@
 ﻿namespace Thrusters
 {
-    public enum ThrusterPlacement { Top, Bottom }
+    public enum ThrusterPlacement { Middle, Top, Bottom }
 }

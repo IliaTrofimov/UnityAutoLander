@@ -32,6 +32,7 @@ namespace Lander
         void Start()
         {
             body = gameObject.GetComponent<Rigidbody>();
+            thrustersController = new ThrustersController(GetComponentsInChildren<Thruster>());
         }
 
         private void Update()
@@ -41,15 +42,14 @@ namespace Lander
         }
 
 
-
         void FixedUpdate()
         {
-            float pitch = Input.GetAxis("Roll") * RollThrust;
-            float roll = Input.GetAxis("Pitch") * PitchThrust;
-            float yaw = Input.GetAxis("Yaw") * YawThrust;
-            float up = Input.GetAxis("Thrust") * MainThrust;
+            float pitch = Input.GetAxis("Horizontal") * RollThrust;
+            float roll = Input.GetAxis("Vertical") * PitchThrust;
+            //float yaw = Input.GetAxis("Yaw") * YawThrust;
+            float up = Input.GetAxis("Jump") * MainThrust;
 
-            thrustersController.ApplyMovement(0, up, 0, roll, yaw, pitch);
+            thrustersController.ApplyMovement(0, up, 0, roll, 0, pitch);
             ObjectMovedEvent.Invoke(new MovementInfo(body.position, body.transform.eulerAngles, body.velocity, body.angularVelocity));
 
             if (Input.GetKey(KeyCode.LeftShift))

@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
-using Utils;
+using UnityEngine.Events;
+using UnityEngine.UIElements;
 
+using Utils;
 
 namespace ProximitySensors
 {
@@ -18,10 +20,13 @@ namespace ProximitySensors
         public float Distance => distance;
         public AxisInfo.Axis Axis = AxisInfo.Axis.Y;
         public AxisInfo.Direction Direction = AxisInfo.Direction.Negative;
+        public UnityEvent<ProximitySensorEvent> OnMessureDistance;
 
+        private Vector3 hitPosition;
 		private float distance = float.PositiveInfinity;
-        private LineRenderer lineRenderer;
 		private Vector3 direction;
+        private LineRenderer lineRenderer;
+
 
         private void Start()
 		{
@@ -34,9 +39,27 @@ namespace ProximitySensors
 			GetDistance();
         }
 
+        private void OnDrawGizmos()
+        {
+            if (float.IsFinite(distance))
+            {
+                Gizmos.color = distance <= DangerDistance ? Color.blue : Color.white;
+                Gizmos.DrawLine(gameObject.transform.position, hitPosition);
+            }
+        }
+
         private void Update()
         {
-			GetDistance();
+            if (float.IsFinite(distance))
+            {
+                lineRenderer.enabled = true;
+                lineRenderer.SetPositions(new Vector3[] { gameObject.transform.position, hitPosition });
+                lineRenderer.endColor = distance <= DangerDistance ? Color.blue : Color.white;
+            }
+            else
+            {
+                lineRenderer.enabled = false;
+            }
         }
 
 
@@ -47,20 +70,14 @@ namespace ProximitySensors
 			if (Physics.Raycast(new Ray(position, direction), out RaycastHit hit, MaxDistance, ~Physics.IgnoreRaycastLayer))
 			{
 				distance = hit.distance;
-                lineRenderer.enabled = true;
-                lineRenderer.SetPositions(new Vector3[] { position, hit.point });
-
-				if (distance <= DangerDistance)
-					lineRenderer.endColor = Color.blue;
-				else
-                    lineRenderer.endColor = Color.white;
+                hitPosition = hit.point;
             }
 			else
 			{
 				distance = float.PositiveInfinity;
-				lineRenderer.enabled = false;
 			}
-			return distance;
+            OnMessureDistance.Invoke(new ProximitySensorEvent(Uid, distance));
+            return distance;
 		}
     }
 }

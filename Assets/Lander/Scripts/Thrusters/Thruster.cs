@@ -7,24 +7,24 @@ using UnityEngine.Events;
 
 using Utils;
 
+
 namespace Thrusters
 {
-
     public class Thruster : MonoBehaviour
     {
         private ParticleSystem[] exhausts;
         private AudioSource[] sounds;
         
-        private ThrustersController controller;
+        private Rigidbody body;
         private string thrusterName;
         private Vector3 thrustNormalized;
         private Color vectorColor = Color.gray;
 
+        [Range(0, 100)]
         public float BaseThrustValue = 1.0f;
         public AxisInfo.Axis Axis;
         public AxisInfo.Direction Direction;
         public ThrusterPlacement Placement;
-        public bool DrawDebugLines;
         public string ThrusterName => thrusterName;
 
         public UnityEvent<ThrustInfo> ThrusterBurnEvent;
@@ -33,16 +33,16 @@ namespace Thrusters
         private void Start()
         {
             exhausts = gameObject.GetComponentsInChildren<ParticleSystem>();
-            controller = gameObject.GetComponentInParent<ThrustersController>();
+            body = gameObject.GetComponentInParent<Rigidbody>();
             sounds = gameObject.GetComponentsInChildren<AudioSource>();
             thrusterName = gameObject.name;
             vectorColor = AxisInfo.GetColorForAxis(Axis);
         }
 
-        private void Update()
+        private void OnDrawGizmos()
         {
-            if (DrawDebugLines && thrustNormalized != Vector3.zero)
-               Debug.DrawLine(gameObject.transform.position, gameObject.transform.position + thrustNormalized.normalized * 3, vectorColor);
+            Gizmos.color = vectorColor;
+            Gizmos.DrawLine(gameObject.transform.position, gameObject.transform.position + thrustNormalized * 2);
         }
 
         public void Shutdown()
@@ -64,7 +64,7 @@ namespace Thrusters
 
             var pos = gameObject.transform.position;
             var force = GetThrustForce() * thrust * BaseThrustValue;
-            controller.Body.AddForceAtPosition(force, pos, ForceMode.Impulse);
+            body.AddForceAtPosition(force, pos, ForceMode.Impulse);
             thrustNormalized = force.normalized;
 
             ThrusterBurnEvent.Invoke(new ThrustInfo(Axis, Direction, Placement, thrust));
@@ -75,18 +75,14 @@ namespace Thrusters
             switch (Axis)
             {
                 case AxisInfo.Axis.X:
-                    return gameObject.transform.right * (int)Direction;
+                    return body.transform.right * (int)Direction;
                 case AxisInfo.Axis.Y:
-                    return gameObject.transform.up * (int)Direction;
+                    return body.transform.up * (int)Direction;
                 case AxisInfo.Axis.Z:
-                    return gameObject.transform.forward * (int)Direction;
+                    return body.transform.forward * (int)Direction;
                 default:
                     return Vector3.zero;
             }
         }
-
- 
     }
-
-
 }
