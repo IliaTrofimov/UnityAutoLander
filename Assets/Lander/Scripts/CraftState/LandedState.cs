@@ -1,17 +1,16 @@
 ﻿using UnityEngine;
+using Shared;
 
 namespace CraftState
 {
     public class LandedState : BaseState
     {
-        public LandedState(MovementInfo movement) : base(movement) { }
+        public LandedState(MovementInfo movement, bool isStateChanged = false) : base(movement, isStateChanged) { }
 
         public override BaseState NextState(MovementInfo newMovement)
         {
             if (!newMovement.IsCollided)
-                return new FlyingState(newMovement);
-            else if (Vector3.Distance(movement.Position, newMovement.Position) > 5 || Vector3.Distance(movement.EulerAngles, newMovement.EulerAngles) > 20)
-                return new CapsizedState(newMovement);
+                return new FlyingState(newMovement, true);
             else
                 return base.NextState(newMovement);
         }
