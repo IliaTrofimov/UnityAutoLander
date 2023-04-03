@@ -31,14 +31,14 @@ namespace Telemetry
         }
 
         public ConsoleTelemetryLogger SetMovement(Vector3? position = null,
-            Vector3? eulerAngles = null,
             Vector3? velocity = null,
+            Quaternion? quaternion = null,
             Vector3? angularVelocity = null,
             float? height = null,
             bool? isCollided = null)
         {
             if (position != null) data.Movement.Position = position.Value;
-            if (eulerAngles != null) data.Movement.EulerAngles = eulerAngles.Value;
+            if (quaternion != null) data.Movement.Quaternion = quaternion.Value;
             if (velocity != null) data.Movement.Velocity = velocity.Value;
             if (angularVelocity != null) data.Movement.AngularVelocity = angularVelocity.Value;
             if (height != null) data.Movement.Height = height.Value;
