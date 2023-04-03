@@ -3,7 +3,7 @@ using System.Collections;
 
 public static class Noise {
 
-	public enum NormalizeMode {Local, Global};
+	public enum NormalizeMode {Local, Global}
 
 	public static float[,] GenerateNoiseMap(int mapWidth, int mapHeight, NoiseSettings settings, Vector2 sampleCentre) {
 		float[,] noiseMap = new float[mapWidth,mapHeight];
@@ -64,17 +64,29 @@ public static class Noise {
 			}
 		}
 
+
 		if (settings.normalizeMode == NormalizeMode.Local) {
 			for (int y = 0; y < mapHeight; y++) {
 				for (int x = 0; x < mapWidth; x++) {
 					noiseMap [x, y] = Mathf.InverseLerp (minLocalNoiseHeight, maxLocalNoiseHeight, noiseMap [x, y]);
 				}
 			}
-	}
+		}
 
 		return noiseMap;
 	}
 
+	public static void PutCrater(float[,] noiseMap, int xPos, int yPos, int radius, float depth)
+	{
+		for (int x = Mathf.Max(xPos - radius, 0); x < Mathf.Min(noiseMap.GetLength(0), xPos + radius); x++)
+		{
+            for (int y = Mathf.Max(yPos - radius, 0); y < Mathf.Min(noiseMap.GetLength(1), yPos + radius); y++)
+            {
+				float z = Mathf.Pow(Mathf.Pow(xPos - x, 2) + Mathf.Pow(yPos - y, 2), 2);
+				noiseMap[x, y] = (z/Mathf.Pow(radius, 4) - 1)*depth; 
+            }
+        }
+	}
 }
 
 [System.Serializable]
@@ -90,6 +102,8 @@ public class NoiseSettings {
 
 	public int seed;
 	public Vector2 offset;
+
+	public bool createCraters;
 
 	public void ValidateValues() {
 		scale = Mathf.Max (scale, 0.01f);
