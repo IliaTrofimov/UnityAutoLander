@@ -70,14 +70,17 @@ namespace Thrusters
 
         private void Burn(IEnumerable<Thruster> thrusters, float thrust)
         {
-            foreach (var t in thrusters)
+            if (thrust > 0)
             {
-                Fuel -= t.MaxThrustValue * thrust;
-                if (Fuel > 0)
-                    t.Burn(thrust);
-                else
-                    t.Shutdown();
-            }  
+                foreach (var t in thrusters)
+                {
+                    Fuel -= t.MaxThrustValue * thrust;
+                    if (Fuel > 0)
+                        t.Burn(thrust);
+                    else
+                        t.Shutdown();
+                }
+            }
         }
 
         private void Shutdown(IEnumerable<Thruster> thrusters)

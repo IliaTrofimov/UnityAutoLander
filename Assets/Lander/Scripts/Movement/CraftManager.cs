@@ -19,7 +19,7 @@ namespace Movement
         public float MaxMovementAfterTouch = 5;
 
         [Range(-1, 1)]
-        public float MaxRotationAfterTouch = 20;
+        public float MaxRotationAfterTouch = 0.8f;
 
         [Range(0, 60)]
         public float MaxTocuhVelocity = 40;
