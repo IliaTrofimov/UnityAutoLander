@@ -1,12 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-namespace Utils
+namespace Shared
 {
     public static class AxisInfo
     {
         public enum Axis { X, Z, Y }
 
-        public enum Direction { Positive = 1, Negative = -1 }
+        public enum Direction
+        {
+            Positive = 1,
+            Negative = -1
+        }
 
         public static Vector3 GetVector(Axis axis, Direction direction)
         {
@@ -32,7 +37,4 @@ namespace Utils
         }
 
     }
-
-
-
 }
