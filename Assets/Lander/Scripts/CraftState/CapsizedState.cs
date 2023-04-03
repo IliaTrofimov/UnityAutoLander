@@ -4,7 +4,10 @@ namespace CraftState
 {
     public class CapsizedState : BaseState
     {
-        public CapsizedState(MovementInfo movement, bool isStateChanged = false) : base(movement, isStateChanged) { }
+        public CapsizedState(MovementInfo movement, bool isStateChanged = true) : base(movement, isStateChanged)
+        {
+            isFinalState = true;
+        }
 
         public override BaseState NextState(MovementInfo newMovement)
         {
@@ -13,10 +16,5 @@ namespace CraftState
             else
                 return base.NextState(newMovement);
         }
-    }
-
-    public class SlippedState : CapsizedState
-    {
-        public SlippedState(MovementInfo movement, bool isStateChanged = false) : base(movement, isStateChanged) { }
     }
 }

@@ -5,7 +5,10 @@ namespace CraftState
 {
     public class LandedState : BaseState
     {
-        public LandedState(MovementInfo movement, bool isStateChanged = false) : base(movement, isStateChanged) { }
+        public LandedState(MovementInfo movement, bool isStateChanged = true) : base(movement, isStateChanged)
+        {
+            isFinalState = true;
+        }
 
         public override BaseState NextState(MovementInfo newMovement)
         {

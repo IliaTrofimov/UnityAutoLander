@@ -18,7 +18,7 @@ namespace Movement
         [Range(0.1f, 10)]
         public float MaxMovementAfterTouch = 5;
 
-        [Range(2, 60)]
+        [Range(-1, 1)]
         public float MaxRotationAfterTouch = 20;
 
         [Range(0, 60)]
@@ -40,7 +40,8 @@ namespace Movement
         {
             Position = body.worldCenterOfMass,
             Velocity = body.velocity,
-            EulerAngles = body.transform.eulerAngles,
+            Quaternion = body.transform.rotation,
+            Normal = body.transform.up,
             AngularVelocity = body.angularVelocity,
             Height = heightSensor.Distance,
             IsCollided = isCollided
@@ -49,10 +50,10 @@ namespace Movement
 
         private void Start()
         {
-            FlyingState.MaxTocuhVelocity = MaxTocuhVelocity;
-            FixationState.MaxMovementAfterTouch = MaxMovementAfterTouch;
-            FixationState.MaxRotationAfterTouch = MaxRotationAfterTouch;
-            FixationState.StandStillSeconds = StandStillSeconds;
+            BaseState.MaxTocuhVelocity = MaxTocuhVelocity;
+            BaseState.MaxMovementAfterTouch = MaxMovementAfterTouch;
+            BaseState.MaxRotationAfterTouch = MaxRotationAfterTouch;
+            BaseState.StandStillSeconds = StandStillSeconds;
 
             body = gameObject.GetComponent<Rigidbody>();
             heightSensor = gameObject.GetComponentInChildren<HeightSensor>();
@@ -61,6 +62,7 @@ namespace Movement
             thrusters = gameObject.GetComponentsInChildren<Thruster>();
 
             state = new FlyingState(Movement);
+            Debug.Log(state);
 
             try
             {
