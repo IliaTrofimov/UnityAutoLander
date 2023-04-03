@@ -5,38 +5,67 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-using Utils;
+using Shared;
 
 
 namespace Thrusters
 {
-    public class Thruster : MonoBehaviour
+    /// <summary>Одиночный двигатель космического корабля.</summary>
+    [DisallowMultipleComponent]
+    public class Thruster : MonoBehaviour, ILabeledWithOrder<PositionOnSpacecraft>
     {
         private ParticleSystem[] exhausts;
         private AudioSource[] sounds;
         
         private Rigidbody body;
-        private string thrusterName;
         private Vector3 thrustNormalized;
         private Color vectorColor = Color.gray;
 
         [Range(0, 100)]
-        public float BaseThrustValue = 1.0f;
-        public AxisInfo.Axis Axis;
-        public AxisInfo.Direction Direction;
-        public ThrusterPlacement Placement;
-        public string ThrusterName => thrusterName;
+        public float MaxThrustValue = 1.0f;
 
-        public UnityEvent<ThrustInfo> ThrusterBurnEvent;
+        [SerializeField]
+        public PositionOnSpacecraft Position;
+        public int Order;
+
+
+        public (PositionOnSpacecraft, int) GetLabel()
+        {
+            return (Position, Order);
+        }
+
+        /// <summary>Выключение двигателя. Выключение всех эффектов и звуков.</summary>
+        public void Shutdown()
+        {
+            foreach (var e in exhausts.Where(e => e.isPlaying))
+                e.Stop();
+            foreach (var s in sounds.Where(s => s.isPlaying))
+                s.Stop();
+
+            thrustNormalized = Vector3.zero;
+        }
+
+        /// <summary>Включение двигателя и применение тяги. Включение всех эффектов и звуков.</summary>
+        public void Burn(float thrust)
+        {
+            foreach (var e in exhausts.Where(e => !e.isPlaying))
+                e.Play();
+            foreach (var s in sounds.Where(s => !s.isPlaying))
+                s.Play();
+
+            var pos = gameObject.transform.position;
+            var force = GetThrustForce() * thrust * MaxThrustValue;
+            body.AddForceAtPosition(force, pos, ForceMode.Impulse);
+            thrustNormalized = force.normalized;
+        }
 
 
         private void Start()
         {
-            exhausts = gameObject.GetComponentsInChildren<ParticleSystem>();
             body = gameObject.GetComponentInParent<Rigidbody>();
+            exhausts = gameObject.GetComponentsInChildren<ParticleSystem>();
             sounds = gameObject.GetComponentsInChildren<AudioSource>();
-            thrusterName = gameObject.name;
-            vectorColor = AxisInfo.GetColorForAxis(Axis);
+            vectorColor = AxisInfo.GetColorForAxis(Position.Axis);
         }
 
         private void OnDrawGizmos()
@@ -49,41 +78,16 @@ namespace Thrusters
             }
         }
 
-        public void Shutdown()
-        {
-            foreach (var e in exhausts.Where(e => e.isPlaying))
-                e.Stop();
-            foreach (var s in sounds.Where(s => s.isPlaying))
-                s.Stop();
-
-            thrustNormalized = Vector3.zero;
-        }
-
-        public void Burn(float thrust)
-        {
-            foreach (var e in exhausts.Where(e => !e.isPlaying))
-                e.Play();
-            foreach (var s in sounds.Where(s => !s.isPlaying))
-                s.Play();
-
-            var pos = gameObject.transform.position;
-            var force = GetThrustForce() * thrust * BaseThrustValue;
-            body.AddForceAtPosition(force, pos, ForceMode.Impulse);
-            thrustNormalized = force.normalized;
-
-            ThrusterBurnEvent.Invoke(new ThrustInfo(Axis, Direction, Placement, thrust));
-        }
-
         private Vector3 GetThrustForce()
         {
-            switch (Axis)
+            switch (Position.Axis)
             {
                 case AxisInfo.Axis.X:
-                    return body.transform.right * (int)Direction;
+                    return body.transform.right * (int)Position.Direction;
                 case AxisInfo.Axis.Y:
-                    return body.transform.up * (int)Direction;
+                    return body.transform.up * (int)Position.Direction;
                 case AxisInfo.Axis.Z:
-                    return body.transform.forward * (int)Direction;
+                    return body.transform.forward * (int)Position.Direction;
                 default:
                     return Vector3.zero;
             }

@@ -3,32 +3,18 @@ using System.Linq;
 using System.Collections.Generic;
 
 using UnityEngine;
-using UnityEngine.Events;
 
-using Utils;
+using Shared;
 
 namespace Thrusters
 {
-
-    public class ThrustersController : IThrustersController
+    /// <summary>Контроллер двигателей.</summary>
+    public class ThrustersController : MonoBehaviour, IThrustersController
     {
+        private Dictionary<PositionOnSpacecraft, List<Thruster>> thrusters = new();
+
         [Range(0, 100_000)]
         public float Fuel = 50_000;
-        public UnityEvent<float> FuelChangedEvent;
-
-        private Dictionary<ThrusterPosition, List<Thruster>> thrusters = new();
-
-
-        public ThrustersController(Thruster[] thrusters)
-        {
-            foreach (var t in thrusters)
-            {
-                var pos = new ThrusterPosition(t.Axis, t.Direction, t.Placement);
-                if (!this.thrusters.TryAdd(pos, new List<Thruster>() { t }))
-                    this.thrusters[pos].Add(t);
-            }
-        }
-
 
         public void ApplyMovement(float moveX, float moveY, float moveZ, float rotX, float rotY, float rotZ)
         {
@@ -40,14 +26,28 @@ namespace Thrusters
                 return;
             }
 
-            Burn(thrusters[ThrusterPosition.YPositiveBot], moveY);
-            BurnOpposite(thrusters[ThrusterPosition.XPositiveTop], thrusters[ThrusterPosition.XNegativeTop], rotZ);
-            BurnOpposite(thrusters[ThrusterPosition.XPositiveBot], thrusters[ThrusterPosition.XNegativeBot], -rotZ);
-            BurnOpposite(thrusters[ThrusterPosition.ZPositiveTop], thrusters[ThrusterPosition.ZNegativeTop], rotX);
-            BurnOpposite(thrusters[ThrusterPosition.ZPositiveBot], thrusters[ThrusterPosition.ZNegativeBot], -rotX);
-
-            FuelChangedEvent?.Invoke(Fuel);
+            Burn(thrusters[PositionOnSpacecraft.YPositiveBot], moveY);
+            BurnOpposite(thrusters[PositionOnSpacecraft.XPositiveTop], thrusters[PositionOnSpacecraft.XNegativeTop], rotZ);
+            BurnOpposite(thrusters[PositionOnSpacecraft.XPositiveBot], thrusters[PositionOnSpacecraft.XNegativeBot], -rotZ);
+            BurnOpposite(thrusters[PositionOnSpacecraft.ZPositiveTop], thrusters[PositionOnSpacecraft.ZNegativeTop], rotX);
+            BurnOpposite(thrusters[PositionOnSpacecraft.ZPositiveBot], thrusters[PositionOnSpacecraft.ZNegativeBot], -rotX);
         }
+
+        public void Shutdown()
+        {
+            Shutdown(thrusters.SelectMany(kvp => kvp.Value));
+        }
+
+
+
+        private void Start()
+        {
+            var tr = GetComponentsInChildren<Thruster>();
+            foreach (var t in tr)
+                if (!this.thrusters.TryAdd(t.Position, new List<Thruster>() { t }))
+                    this.thrusters[t.Position].Add(t);
+        }
+
 
         private void BurnOpposite(IEnumerable<Thruster> pos, IEnumerable<Thruster> neg, float thrust)
         {
@@ -72,7 +72,7 @@ namespace Thrusters
         {
             foreach (var t in thrusters)
             {
-                Fuel -= t.BaseThrustValue * thrust;
+                Fuel -= t.MaxThrustValue * thrust;
                 if (Fuel > 0)
                     t.Burn(thrust);
                 else

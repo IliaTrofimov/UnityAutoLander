@@ -1,25 +1,18 @@
-﻿using System;
-using Utils;
+﻿using Shared;
 
 namespace Thrusters
 {
-
     public class ThrustInfo
     {
-        public ThrusterPosition Position { get; set; }
+        public PositionOnSpacecraft Position { get; set; }
         public float Thrust { get; set; }
+        public string Uid { get; set; }
 
-        public ThrustInfo(ThrusterPosition position, float thrust)
+        public ThrustInfo(AxisInfo.Axis axis, AxisInfo.Direction direction, Placement placement,  float thrust, string uid)
         {
-            Position = position;
+            Position = new PositionOnSpacecraft(axis, direction, placement);
             Thrust = thrust;
-        }
-
-        public ThrustInfo(AxisInfo.Axis axis, AxisInfo.Direction direction, ThrusterPlacement placement, float thrust)
-        {
-            Position = new ThrusterPosition(axis, direction, placement);
-            Thrust = thrust;
+            Uid = uid;
         }
     }
-
 }
