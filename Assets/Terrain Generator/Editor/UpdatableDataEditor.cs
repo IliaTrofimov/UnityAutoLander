@@ -2,6 +2,8 @@
 using System.Collections;
 using UnityEditor;
 
+using GlobalShared;
+
 [CustomEditor (typeof(UpdatableData), true)]
 public class UpdatableDataEditor : Editor {
 

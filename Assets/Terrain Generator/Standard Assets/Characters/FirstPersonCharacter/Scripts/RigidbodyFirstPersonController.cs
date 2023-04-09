@@ -136,9 +136,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
 			if (Input.GetButtonDown("Jump") && !m_Jump)
             {
-                //  m_Jump = true;
-                var tc = GetComponent<Thrusters.ThrustersController>();
-                tc.ApplyMovement(0, 1, 0, 0, 0, 0);
+                    m_Jump = true;
             }
         }
 

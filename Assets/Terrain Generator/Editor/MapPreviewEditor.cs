@@ -2,6 +2,8 @@
 using System.Collections;
 using UnityEditor;
 
+using TerrainGenerator;
+
 [CustomEditor (typeof (MapPreview))]
 public class MapPreviewEditor : Editor {
 
