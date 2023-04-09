@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
-using Shared;
+using Lander.Shared;
 
-namespace ProximitySensors
+namespace Lander.ProximitySensors
 {
     /// <summary>Датчик высоты.</summary>
     public sealed class HeightSensor : BaseProximitySensor, ILabeled<int>

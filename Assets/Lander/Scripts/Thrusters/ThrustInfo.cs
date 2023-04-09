@@ -1,6 +1,6 @@
-﻿using Shared;
+﻿using Lander.Shared;
 
-namespace Thrusters
+namespace Lander.hrusters
 {
     public class ThrustInfo
     {

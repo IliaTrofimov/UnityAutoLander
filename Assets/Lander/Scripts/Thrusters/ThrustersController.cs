@@ -4,21 +4,40 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-using Shared;
+using Lander.Shared;
+using Lander.ProximitySensors;
 
-namespace Thrusters
+namespace Lander.Thrusters
 {
     /// <summary>Контроллер двигателей.</summary>
-    public class ThrustersController : MonoBehaviour, IThrustersController
+    public class ThrustersController : ManualThrustersController
     {
         private Dictionary<PositionOnSpacecraft, List<Thruster>> thrusters = new();
 
         [Range(0, 100_000)]
-        public float Fuel = 50_000;
+        [SerializeField]
+        private float fuel = 50_000;
 
-        public void ApplyMovement(float moveX, float moveY, float moveZ, float rotX, float rotY, float rotZ)
+        public override float Fuel => fuel;
+
+
+        public override void ApplyMovement(float[] thrust)
         {
-            if (Fuel <= 0)
+            foreach (var (thruster, val) in thrusters.Values.SelectMany(t => t).Zip(thrust, (Thruster thruster, float val) => (thruster, val)))
+            {
+                if (fuel > 0)
+                {
+                    fuel -= thruster.MaxThrustValue * val;
+                    thruster.Burn(val);
+                }  
+                else
+                    thruster.Shutdown();
+            }
+        }
+
+        public override void ApplyMovement(float moveX, float moveY, float moveZ, float rotX, float rotY, float rotZ)
+        {
+            if (fuel <= 0)
             {
                 foreach (var kvp in thrusters)
                     Shutdown(kvp.Value);
@@ -33,7 +52,7 @@ namespace Thrusters
             BurnOpposite(thrusters[PositionOnSpacecraft.ZPositiveBot], thrusters[PositionOnSpacecraft.ZNegativeBot], -rotX);
         }
 
-        public void Shutdown()
+        public override void Shutdown()
         {
             Shutdown(thrusters.SelectMany(kvp => kvp.Value));
         }
@@ -42,10 +61,12 @@ namespace Thrusters
 
         private void Start()
         {
-            var tr = GetComponentsInChildren<Thruster>();
-            foreach (var t in tr)
-                if (!this.thrusters.TryAdd(t.Position, new List<Thruster>() { t }))
-                    this.thrusters[t.Position].Add(t);
+            foreach (var t in GetComponentsInChildren<Thruster>())
+                if (!this.thrusters.TryAdd(t.GetLabel().label, new List<Thruster>() { t }))
+                    this.thrusters[t.GetLabel().label].Add(t);
+
+            foreach (var t in thrusters.Values)
+                t.Sort((Thruster a, Thruster b) => a.GetLabel().order.CompareTo(b.GetLabel().order));
         }
 
 
@@ -74,13 +95,15 @@ namespace Thrusters
             {
                 foreach (var t in thrusters)
                 {
-                    Fuel -= t.MaxThrustValue * thrust;
-                    if (Fuel > 0)
+                    fuel -= t.MaxThrustValue * thrust;
+                    if (fuel > 0)
                         t.Burn(thrust);
                     else
                         t.Shutdown();
                 }
             }
+            else
+                Shutdown(thrusters);
         }
 
         private void Shutdown(IEnumerable<Thruster> thrusters)

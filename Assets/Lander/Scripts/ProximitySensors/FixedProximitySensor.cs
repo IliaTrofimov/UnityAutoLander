@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
-using Shared;
+using Lander.Shared;
 
-namespace ProximitySensors
+namespace Lander.ProximitySensors
 {
     /// <summary>Датчик, измерящий расстояние вдоль заданной оси в мировой системе координат.</summary>
     public sealed class FixedProximitySensor : BaseProximitySensor, ILabeled<int>
 	{
-        public AxisInfo.Axis Axis = AxisInfo.Axis.Y;
-        public AxisInfo.Direction Direction = AxisInfo.Direction.Negative;
+        [SerializeField]
+        private AxisInfo.Axis Axis = AxisInfo.Axis.Y;
+
+        [SerializeField]
+        private AxisInfo.Direction Direction = AxisInfo.Direction.Negative;
 
         private void Start()
         {

@@ -1,12 +1,17 @@
 ﻿using UnityEngine;
-using Shared;
+using Lander.Shared;
 
-namespace ProximitySensors
+namespace Lander.ProximitySensors
 {
 	/// <summary>Сенсор, измеряющий расстояние вдоль оси Y в системе координат родительского объекта.</summary>
-    public class ProximitySensor : BaseProximitySensor, ILabeled<PositionOnSpacecraft>
+    public class ProximitySensor : BaseProximitySensor, ILabeledWithOrder<PositionOnSpacecraft>
 	{
-        public PositionOnSpacecraft Position;
+        [SerializeField]
+        private PositionOnSpacecraft position;
+
+        [SerializeField]
+        private int order;
+
 
         public override float GetDistance()
 		{
@@ -14,9 +19,9 @@ namespace ProximitySensors
 			return base.GetDistance();
 		}
 
-        public PositionOnSpacecraft GetLabel()
+        public (PositionOnSpacecraft label, int order) GetLabel()
         {
-            return Position;
+            return (position, order);
         }
 
         private void Start()

@@ -5,15 +5,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-using Shared;
+using Lander.Shared;
 
 
-namespace Thrusters
+namespace Lander.Thrusters
 {
+
     /// <summary>Одиночный двигатель космического корабля.</summary>
     [DisallowMultipleComponent]
-    public class Thruster : MonoBehaviour, ILabeledWithOrder<PositionOnSpacecraft>
+    public class Thruster : BaseThruster, ILabeledWithOrder<PositionOnSpacecraft>
     {
+        [SerializeField]
+        private float maxThrustValue;
+
+        [SerializeField]
+        private PositionOnSpacecraft Position;
+
+        [SerializeField]
+        private int Order;
+
+        private float thrust;
         private ParticleSystem[] exhausts;
         private AudioSource[] sounds;
         
@@ -21,21 +32,17 @@ namespace Thrusters
         private Vector3 thrustNormalized;
         private Color vectorColor = Color.gray;
 
-        [Range(0, 100)]
-        public float MaxThrustValue = 1.0f;
-
-        [SerializeField]
-        public PositionOnSpacecraft Position;
-        public int Order;
+        public override float MaxThrustValue => maxThrustValue;
+        public override float Thrust => thrust;
 
 
-        public (PositionOnSpacecraft, int) GetLabel()
+        public (PositionOnSpacecraft label, int order) GetLabel()
         {
             return (Position, Order);
         }
 
         /// <summary>Выключение двигателя. Выключение всех эффектов и звуков.</summary>
-        public void Shutdown()
+        public override void Shutdown()
         {
             foreach (var e in exhausts.Where(e => e.isPlaying))
                 e.Stop();
@@ -43,10 +50,11 @@ namespace Thrusters
                 s.Stop();
 
             thrustNormalized = Vector3.zero;
+            this.thrust = 0;
         }
 
         /// <summary>Включение двигателя и применение тяги. Включение всех эффектов и звуков.</summary>
-        public void Burn(float thrust)
+        public override void Burn(float thrust)
         {
             foreach (var e in exhausts.Where(e => !e.isPlaying))
                 e.Play();
@@ -54,7 +62,8 @@ namespace Thrusters
                 s.Play();
 
             var pos = gameObject.transform.position;
-            var force = GetThrustForce() * thrust * MaxThrustValue;
+            this.thrust = thrust * MaxThrustValue;
+            var force = GetThrustForce() * this.thrust;
             body.AddForceAtPosition(force, pos, ForceMode.Impulse);
             thrustNormalized = force.normalized;
         }
