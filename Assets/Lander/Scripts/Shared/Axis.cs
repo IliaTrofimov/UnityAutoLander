@@ -1,11 +1,11 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Shared
+namespace Lander.Shared
 {
     public static class AxisInfo
     {
-        public enum Axis { X, Z, Y }
+        public enum Axis { X = 0, Z = 1, Y = 2 }
 
         public enum Direction
         {

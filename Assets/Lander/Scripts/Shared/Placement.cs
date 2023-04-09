@@ -1,4 +1,4 @@
-﻿namespace Shared
+﻿namespace Lander.Shared
 {
-    public enum Placement { Middle, Top, Bottom }
+    public enum Placement { Bottom, Middle, Top}
 }

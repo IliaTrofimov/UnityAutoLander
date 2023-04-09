@@ -1,13 +1,12 @@
 ﻿using System;
 
-namespace Shared
+namespace Lander.Shared
 {
 
     /// <summary>Положение детали на космическом корабле.</summary>
     /// <remarks>Данный тип можно использовать как ключ в словаре: хеш равен объединению хешей полей объекта.</remarks>
-    // TODO: сделать синглтон
     [Serializable]
-    public struct PositionOnSpacecraft
+    public struct PositionOnSpacecraft : IComparable<PositionOnSpacecraft>
     {
         [UnityEngine.SerializeField] private AxisInfo.Axis _axis;
         [UnityEngine.SerializeField] private AxisInfo.Direction _direction;
@@ -31,7 +30,18 @@ namespace Shared
         public override bool Equals(object obj) => obj is PositionOnSpacecraft p && p.Axis == Axis && p.Direction == Direction && p.Placement == Placement;
         public override string ToString() => $"{(Direction == AxisInfo.Direction.Negative ? '-' : '+')}{Axis}{Placement}";
 
-
+        public int CompareTo(PositionOnSpacecraft other)
+        {
+            if (Axis.CompareTo(other.Axis) == 0)
+            {
+                if (Direction.CompareTo(other.Direction) == 0)
+                    return Placement.CompareTo(other.Placement);
+                else
+                    return Direction.CompareTo(other.Direction);
+            }
+            else
+                return Axis.CompareTo(other.Axis);
+        }
 
         public static readonly PositionOnSpacecraft XPositiveTop = new PositionOnSpacecraft(AxisInfo.Axis.X, AxisInfo.Direction.Positive, Placement.Top);
         public static readonly PositionOnSpacecraft XPositiveBot = new PositionOnSpacecraft(AxisInfo.Axis.X, AxisInfo.Direction.Positive, Placement.Bottom);
