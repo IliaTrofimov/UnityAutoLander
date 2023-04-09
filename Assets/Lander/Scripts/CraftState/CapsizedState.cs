@@ -1,18 +1,19 @@
-﻿using Shared;
+﻿using Lander.Shared;
 
-namespace CraftState
+namespace Lander.CraftState
 {
-    public class CapsizedState : BaseState
+    public class CapsizedState : FatalState
     {
-        public CapsizedState(MovementInfo movement, bool isStateChanged = true) : base(movement, isStateChanged)
+        public CapsizedState(MovementInfo movement, StateSettings settings = default, bool isStateChanged = true)
+            : base(movement, settings, isStateChanged)
         {
-            isFinalState = true;
+            this.settings = settings;
         }
 
         public override BaseState NextState(MovementInfo newMovement)
         {
             if (!newMovement.IsCollided)
-                return new FlyingState(newMovement, true);
+                return new FlyingState(newMovement, settings, true);
             else
                 return base.NextState(newMovement);
         }

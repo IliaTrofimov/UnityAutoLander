@@ -1,12 +1,12 @@
-﻿using Shared;
+﻿using Lander.Shared;
 
-namespace CraftState
+namespace Lander.CraftState
 {
     public class SlippedState : CapsizedState
     {
-        public SlippedState(MovementInfo movement, bool isStateChanged = true) : base(movement, isStateChanged)
+        public SlippedState(MovementInfo movement, StateSettings settings, bool isStateChanged = true)
+            : base(movement, settings, isStateChanged)
         {
-            isFinalState = true;
         }
     }
 }

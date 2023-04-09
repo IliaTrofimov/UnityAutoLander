@@ -1,21 +1,21 @@
 ﻿using UnityEngine;
-using Shared;
+using Lander.Shared;
 
-namespace CraftState
+namespace Lander.CraftState
 {
-    public class OverturnedState : BaseState
+    public class OverturnedState : FatalState
     {
-        public OverturnedState(MovementInfo movement, bool isStateChanged = true) : base(movement, isStateChanged)
+        public OverturnedState(MovementInfo movement, StateSettings settings, bool isStateChanged = true)
+            : base(movement, settings, isStateChanged)
         {
-            isFinalState = true;
         }
 
         public override BaseState NextState(MovementInfo newMovement)
         {
             if (newMovement.IsCollided)
-                return new CrashedState(newMovement);
+                return new CrashedState(newMovement, settings);
             else if (Vector3.Dot(newMovement.Normal, Vector3.up) >= -0.35f)
-                return new FlyingState(newMovement);
+                return new FlyingState(newMovement, settings);
             else
                 return base.NextState(newMovement);
         }

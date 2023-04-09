@@ -1,18 +1,21 @@
 ﻿using UnityEngine;
-using Shared;
+using Lander.Shared;
 
-namespace CraftState
+namespace Lander.CraftState
 {
     public class FlyingState : BaseState
 	{
-        public FlyingState(MovementInfo movement, bool isStateChanged = true) : base(movement, isStateChanged) { }
+        public FlyingState(MovementInfo movement, StateSettings settings = default, bool isStateChanged = true)
+            : base(movement, settings, isStateChanged) { }
 
         public override BaseState NextState(MovementInfo newMovement)
         {
             if (newMovement.IsCollided)
-                return newMovement.Velocity.magnitude > MaxTocuhVelocity ? new CrashedState(newMovement) : new TouchedState(movement);
+                return newMovement.Velocity.magnitude > settings.MaxTocuhVelocity
+                    ? new CrashedState(newMovement, settings)
+                    : new TouchedState(newMovement, settings);
             else if (Vector3.Dot(newMovement.Normal, Vector3.up) < -0.35f)
-                return new OverturnedState(newMovement);             
+                return new OverturnedState(newMovement, settings);             
             else
                 return base.NextState(newMovement);
         }

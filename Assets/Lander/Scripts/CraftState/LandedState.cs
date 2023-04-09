@@ -1,19 +1,19 @@
 ﻿using UnityEngine;
-using Shared;
+using Lander.Shared;
 
-namespace CraftState
+namespace Lander.CraftState
 {
-    public class LandedState : BaseState
+    public class LandedState : FinalState
     {
-        public LandedState(MovementInfo movement, bool isStateChanged = true) : base(movement, isStateChanged)
+        public LandedState(MovementInfo movement, StateSettings settings, bool isStateChanged = true)
+            : base(movement, settings, isStateChanged)
         {
-            isFinalState = true;
         }
 
         public override BaseState NextState(MovementInfo newMovement)
         {
             if (!newMovement.IsCollided)
-                return new FlyingState(newMovement, true);
+                return new FlyingState(newMovement, settings, true);
             else
                 return base.NextState(newMovement);
         }

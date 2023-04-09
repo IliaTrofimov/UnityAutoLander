@@ -1,17 +1,16 @@
 ﻿using System;
 using UnityEngine;
+using Lander.Shared;
 
-using Shared;
-
-namespace CraftState
+namespace Lander.CraftState
 {
     public class FixationState : BaseState
     {
         private DateTime touchedAt;
         private Vector3 touchPosition, touchNormal;
 
-        public FixationState(MovementInfo movement, Vector3 touchPosition, Vector3 touchNormal, DateTime touchedAt, bool isStateChanged = true)
-            : base(movement, isStateChanged)
+        public FixationState(MovementInfo movement, Vector3 touchPosition, Vector3 touchNormal, DateTime touchedAt, StateSettings settings = default, bool isStateChanged = true)
+            : base(movement, settings, isStateChanged)
         {
             this.touchPosition = touchPosition;
             this.touchNormal = touchNormal;
@@ -21,13 +20,13 @@ namespace CraftState
         public override BaseState NextState(MovementInfo newMovement)
         {
             if (!newMovement.IsCollided)
-                return new FlyingState(newMovement, true);
-            else if ((createdAt - touchedAt).TotalSeconds >= StandStillSeconds)
-                return new LandedState(newMovement, true);
-            else if (Vector3.Distance(touchPosition, newMovement.Position) > MaxMovementAfterTouch)
-                return new SlippedState(newMovement, true);
-            else if (Vector3.Dot(touchNormal, newMovement.Normal) > MaxRotationAfterTouch)
-                return new CapsizedState(newMovement, true);
+                return new FlyingState(newMovement, settings, true);
+            else if ((createdAt - touchedAt).TotalSeconds >= settings.StandStillSeconds)
+                return new LandedState(newMovement, settings, true);
+            else if (Vector3.Distance(touchPosition, newMovement.Position) > settings.MaxMovementAfterTouch)
+                return new SlippedState(newMovement, settings, true);
+            else if (Vector3.Dot(touchNormal, newMovement.Normal) > settings.MaxRotationAfterTouch)
+                return new CapsizedState(newMovement, settings, true);
             else
                 return base.NextState(newMovement);
         }
