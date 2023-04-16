@@ -32,7 +32,7 @@ namespace Lander.Control
 
         [Header("Start parameters")]
         [SerializeField]
-        private Vector3 startVelocity;
+        private Vector3 centerOfMass;
 
         [SerializeField]
         private StateSettings stateSettings;
@@ -46,6 +46,11 @@ namespace Lander.Control
         public BaseState State => state;
         public StateSettings StateSettings => stateSettings;
 
+
+        public void Reset()
+        {
+            state = new FlyingState(ResetMovement(), settings: stateSettings).NextState(movement); 
+        }
 
         private MovementInfo ResetMovement(bool? isCollided = null)
         {
@@ -85,7 +90,7 @@ namespace Lander.Control
 
             body = gameObject.GetComponent<Rigidbody>();
             heightSensor = gameObject.GetComponentInChildren<HeightSensor>();
-            body.velocity = startVelocity;
+            body.centerOfMass = centerOfMass;
 
             state = new FlyingState(ResetMovement(), settings: stateSettings).NextState(movement);
             LogState();
@@ -113,6 +118,16 @@ namespace Lander.Control
         {
             if (useMovementLogging)
                 Task.Run(() => stateLogger.ForceLogAsync());
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawSphere(body.worldCenterOfMass, 0.2f);
+            Gizmos.DrawRay(body.worldCenterOfMass, body.velocity.normalized*2);
+
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawRay(body.worldCenterOfMass, body.angularVelocity.normalized*2);
         }
     }
 }

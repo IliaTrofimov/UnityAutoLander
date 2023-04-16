@@ -13,21 +13,29 @@ namespace Lander.Control
     [DisallowMultipleComponent]
     public class Movement : MonoBehaviour
     {
-        [Range(1, 50)]
+        [Range(0, 50)]
         [SerializeField]
         private float PitchThrust = 5;
 
-        [Range(1, 50)]
+        [Range(0, 50)]
         [SerializeField]
         private float RollThrust = 5;
 
-        [Range(1, 50)]
+        [Range(0, 50)]
         [SerializeField]
         private float YawThrust = 5;
 
-        [Range(1, 250)]
+        [Range(0, 250)]
         [SerializeField]
         private float MainThrust = 100;
+
+        [Range(0, 50)]
+        [SerializeField]
+        private float XThrust = 5;
+
+        [Range(0, 50)]
+        [SerializeField]
+        private float ZThrust = 5;
 
         [SerializeField]
         private ThrustersController thrustersController;
@@ -39,12 +47,12 @@ namespace Lander.Control
             float pitch = Input.GetAxis("Roll") * RollThrust;
             float roll = Input.GetAxis("Pitch") * PitchThrust;
             float yaw = Input.GetAxis("Yaw") * YawThrust;
-            float up = Input.GetAxis("Jump") * MainThrust;
-           
-            if (Input.GetKeyDown(KeyCode.LeftShift))
-                thrustersController.ApplyMovement(roll, up, pitch, 0, yaw, 0);
-            else
-                thrustersController.ApplyMovement(0, up, 0, roll, yaw, pitch);
+
+            float y = Input.GetAxis("Jump") * MainThrust;
+            float x = Input.GetAxis("Horizontal");
+            float z = Input.GetAxis("Vertical");
+
+            thrustersController.ApplyMovement(x, y, z, roll, yaw, pitch);
         }
     }
 }
