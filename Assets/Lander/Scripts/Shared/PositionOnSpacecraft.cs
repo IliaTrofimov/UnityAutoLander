@@ -38,7 +38,7 @@ namespace Lander.Shared
 
         public override int GetHashCode() => HashCode.Combine(Axis, Direction, Placement, Offset);
         public override bool Equals(object obj) => obj is PositionOnSpacecraft p && p.Axis == Axis && p.Direction == Direction && p.Placement == Placement && p.Offset == Offset;
-        public override string ToString() => $"{(Direction == AxisInfo.Direction.Negative ? '-' : '+')}{Axis}{Placement}";
+        public override string ToString() => $"{(Direction == AxisInfo.Direction.Negative ? '-' : '+')}{Axis}{Placement}{(Offset == AxisInfo.AxisOffset.Offseted ? "Off" : "")}";
 
         public int CompareTo(PositionOnSpacecraft other)
         {

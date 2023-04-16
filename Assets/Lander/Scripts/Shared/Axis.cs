@@ -15,8 +15,8 @@ namespace Lander.Shared
 
         public enum AxisOffset
         {
-            Coaxial = 0,
-            Offseted = 1
+            Coaxial = 1,
+            Offseted = -1
         }
 
         public static Vector3 GetVector(Axis axis, Direction direction)
