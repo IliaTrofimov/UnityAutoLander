@@ -21,6 +21,8 @@ namespace Lander.CraftState
         {
             if (!newMovement.IsCollided)
                 return new FlyingState(newMovement, settings, true);
+            else if (Vector3.Dot(newMovement.Normal, Vector3.up) <= 0.6)
+                return new CapsizedState(newMovement, settings);
             else if ((createdAt - touchedAt).TotalSeconds >= settings.StandStillSeconds)
                 return new LandedState(newMovement, settings, true);
             else if (Vector3.Distance(touchPosition, newMovement.Position) > settings.MaxMovementAfterTouch)
