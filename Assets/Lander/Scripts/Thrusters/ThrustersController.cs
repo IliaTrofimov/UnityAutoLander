@@ -9,6 +9,7 @@ using Lander.ProximitySensors;
 
 namespace Lander.Thrusters
 {
+
     /// <summary>Контроллер двигателей.</summary>
     public class ThrustersController : ManualThrustersController
     {
@@ -16,10 +17,24 @@ namespace Lander.Thrusters
 
         [Range(0, 100_000)]
         [SerializeField]
-        private float fuel = 50_000;
+        private float maxFuel = 50_000;
 
-        public override float Fuel => fuel;
+        private float fuel;
 
+        public float Fuel
+        {
+            get => fuel / maxFuel;
+            set
+            {
+                if (value > 1)
+                    value = 1;
+                else if (value < 0)
+                    value = 0;
+                fuel = maxFuel * value;
+            }
+        }
+
+        public void ResetFuel() => Fuel = 1;
 
         public override void ApplyMovement(float[] thrust)
         {
@@ -45,11 +60,35 @@ namespace Lander.Thrusters
                 return;
             }
 
-            Burn(thrusters[PositionOnSpacecraft.YPositiveBot], moveY);
+            Burn(thrusters[PositionOnSpacecraft.YNegativeBot], -moveY);
+
+            Burn(thrusters[PositionOnSpacecraft.ZPositiveBot], -moveZ);
+            Burn(thrusters[PositionOnSpacecraft.ZPositiveTop], -moveZ);
+            Burn(thrusters[PositionOnSpacecraft.ZNegativeBot], -moveZ);
+            Burn(thrusters[PositionOnSpacecraft.ZNegativeTop], -moveZ);
+
+            Burn(thrusters[PositionOnSpacecraft.XPositiveBot], -moveX);
+            Burn(thrusters[PositionOnSpacecraft.XPositiveTop], -moveX);
+            Burn(thrusters[PositionOnSpacecraft.XNegativeBot], -moveX);
+            Burn(thrusters[PositionOnSpacecraft.XNegativeTop], -moveX);
+
+            Burn(thrusters[PositionOnSpacecraft.XPositiveBotOff], rotY);
+            Burn(thrusters[PositionOnSpacecraft.XPositiveTopOff], rotY);
+            Burn(thrusters[PositionOnSpacecraft.XNegativeBotOff], -rotY);
+            Burn(thrusters[PositionOnSpacecraft.XNegativeTopOff], -rotY);
+
+            Burn(thrusters[PositionOnSpacecraft.ZPositiveBotOff], -rotY);
+            Burn(thrusters[PositionOnSpacecraft.ZPositiveTopOff], -rotY);
+            Burn(thrusters[PositionOnSpacecraft.ZNegativeBotOff], rotY);
+            Burn(thrusters[PositionOnSpacecraft.ZNegativeTopOff], rotY);
+
+
             BurnOpposite(thrusters[PositionOnSpacecraft.XPositiveTop], thrusters[PositionOnSpacecraft.XNegativeTop], rotZ);
             BurnOpposite(thrusters[PositionOnSpacecraft.XPositiveBot], thrusters[PositionOnSpacecraft.XNegativeBot], -rotZ);
             BurnOpposite(thrusters[PositionOnSpacecraft.ZPositiveTop], thrusters[PositionOnSpacecraft.ZNegativeTop], rotX);
             BurnOpposite(thrusters[PositionOnSpacecraft.ZPositiveBot], thrusters[PositionOnSpacecraft.ZNegativeBot], -rotX);
+
+            
         }
 
         public override void Shutdown()
@@ -61,12 +100,14 @@ namespace Lander.Thrusters
 
         private void Start()
         {
+            fuel = maxFuel;
+
             foreach (var t in GetComponentsInChildren<Thruster>())
                 if (!this.thrusters.TryAdd(t.GetLabel().label, new List<Thruster>() { t }))
                     this.thrusters[t.GetLabel().label].Add(t);
 
-            foreach (var t in thrusters.Values)
-                t.Sort((Thruster a, Thruster b) => a.GetLabel().order.CompareTo(b.GetLabel().order));
+            //foreach (var t in thrusters.Values)
+            //   t.Sort((Thruster a, Thruster b) => a.GetLabel().order.CompareTo(b.GetLabel().order));
         }
 
 
@@ -79,13 +120,13 @@ namespace Lander.Thrusters
             }
             else if (thrust > 0)
             {
-                Shutdown(neg);
-                Burn(pos, thrust);
+                Shutdown(pos);
+                Burn(neg, thrust);
             }
             else
             {
-                Shutdown(pos);
-                Burn(neg, -thrust);
+                Shutdown(neg);
+                Burn(pos, -thrust);
             }
         }
 

@@ -16,10 +16,6 @@ namespace Lander.Thrusters
 
         /// <summary>Выключение всех двигателей.</summary>
         public abstract void Shutdown();
-
-
-        /// <summary>Количество топлива.</summary>
-        public abstract float Fuel { get; }
     }
 
 
