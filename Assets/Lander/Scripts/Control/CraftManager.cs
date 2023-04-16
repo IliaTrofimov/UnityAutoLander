@@ -122,12 +122,16 @@ namespace Lander.Control
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawSphere(body.worldCenterOfMass, 0.2f);
-            Gizmos.DrawRay(body.worldCenterOfMass, body.velocity.normalized*2);
+            if (body != null)
+            {
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawSphere(body.worldCenterOfMass, 0.2f);
+                Gizmos.DrawRay(body.worldCenterOfMass, body.velocity);
 
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawRay(body.worldCenterOfMass, body.angularVelocity.normalized*2);
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawRay(body.worldCenterOfMass, body.angularVelocity * 5);
+            }
+ 
         }
     }
 }

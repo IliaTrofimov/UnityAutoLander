@@ -38,9 +38,13 @@ namespace Lander.Control
         private float ZThrust = 5;
 
         [SerializeField]
-        private ThrustersController thrustersController;
+        private BaseThrustersController thrustersController;
 
 
+        [SerializeField]
+        private Rigidbody Rigidbody;
+
+       
 
         private void FixedUpdate()
         {
@@ -49,8 +53,20 @@ namespace Lander.Control
             float yaw = Input.GetAxis("Yaw") * YawThrust;
 
             float y = Input.GetAxis("Jump") * MainThrust;
-            float x = Input.GetAxis("Horizontal");
-            float z = Input.GetAxis("Vertical");
+            float x = Input.GetAxis("Horizontal") * XThrust;
+            float z = Input.GetAxis("Vertical") * ZThrust;
+
+            if (Input.GetKey(KeyCode.LeftShift))
+                Rigidbody.angularVelocity = Vector3.zero;
+
+            if (Input.GetKey(KeyCode.LeftControl))
+                Rigidbody.velocity = Vector3.zero;
+
+            if (Input.GetKey(KeyCode.LeftAlt))
+            {
+                Rigidbody.angularVelocity = Vector3.zero;
+                Rigidbody.transform.rotation = new Quaternion();
+            }
 
             thrustersController.ApplyMovement(x, y, z, roll, yaw, pitch);
         }
