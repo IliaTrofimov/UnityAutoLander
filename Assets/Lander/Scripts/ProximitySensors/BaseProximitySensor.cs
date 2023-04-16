@@ -11,7 +11,7 @@ namespace Lander.ProximitySensors
     /// <summary>Базовый класс для всех сенсоров расстояния.</summary>
     public abstract class BaseProximitySensor : MonoBehaviour
     {
-        protected float distance = float.PositiveInfinity;
+        protected float distance = -1;
         protected Vector3 direction;
         protected Vector3 hitPosition;
 
@@ -41,7 +41,7 @@ namespace Lander.ProximitySensors
             }
             else
             {
-                distance = float.PositiveInfinity;
+                distance = -1;
             }
             return distance;
         }
@@ -49,7 +49,7 @@ namespace Lander.ProximitySensors
 
         protected virtual void OnDrawGizmos()
         {
-            if (float.IsFinite(distance))
+            if (distance > 0)
             {
                 Gizmos.color = Color.red;
                 Gizmos.color = distance > dangerDistance ? Color.gray : sensorLaserColor;

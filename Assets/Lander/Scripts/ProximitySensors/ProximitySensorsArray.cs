@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using System.Linq;
 using UnityEngine;
 
 using Lander.Shared;
@@ -8,19 +8,18 @@ namespace Lander.ProximitySensors
 {
     public class ProximitySensorsArray : MonoBehaviour
     {
-        public Dictionary<PositionOnSpacecraft, List<ProximitySensor>> Sensors { get; private set; } = new();
+        [SerializeField]
+        private bool LogSensorData;
 
-        private void Start()
+        [SerializeField]
+        public List<ProximitySensor> Sensors;
+        
+
+
+        private void FixedUpdate()
         {
-            foreach (var s in GetComponentsInChildren<ProximitySensor>())
-            {
-                (PositionOnSpacecraft pos, int order) = s.GetLabel();
-                if (!Sensors.TryAdd(pos, new List<ProximitySensor>() { s }))
-                    Sensors[pos].Add(s);
-            }
-
-            foreach (var s in Sensors.Values)
-                s.Sort((ProximitySensor a, ProximitySensor b) => a.GetLabel().order.CompareTo(b.GetLabel().order));
+            if (LogSensorData)
+                Debug.Log(string.Join("; ", Sensors.Select(kvp => $"{kvp.GetLabel().label}: {kvp.Distance:F0}")));
         }
     }
 }
