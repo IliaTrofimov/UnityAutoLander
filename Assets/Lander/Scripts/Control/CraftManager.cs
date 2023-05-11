@@ -9,10 +9,12 @@ using Lander.Shared;
 using Lander.Thrusters;
 using Lander.CraftState;
 using Lander.ProximitySensors;
-
+using System.Collections.Generic;
+using UnityEditor;
 
 namespace Lander.Control
 {
+
     /// <summary>Контроллер, управляющий состоянием космического корабля.</summary>
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
@@ -30,14 +32,17 @@ namespace Lander.Control
         [SerializeField]
         private bool useMovementLogging;
 
-        [Header("Start parameters")]
+        [Header("Craft parameters")]
+        [SerializeField]
+        private StateSettings stateSettings;
+
         [SerializeField]
         private Vector3 centerOfMass;
 
-        [SerializeField]
-        private StateSettings stateSettings;
         #endregion
 
+        private DateTime? lastExplosion;
+        private bool isExploded;
         private Rigidbody body;
         private MovementInfo movement;
         private BaseState state;
@@ -98,6 +103,12 @@ namespace Lander.Control
 
         private void FixedUpdate()
         {
+            if (body != null)
+            {
+                Debug.DrawRay(body.worldCenterOfMass, body.velocity, Color.cyan);
+                Debug.DrawRay(body.worldCenterOfMass, body.angularVelocity * 20, Color.magenta);
+                Debug.DrawRay(body.worldCenterOfMass, -body.transform.up * 50, Color.white);
+            }
             state = state.NextState(ResetMovement());
             LogState();
         }
@@ -118,20 +129,6 @@ namespace Lander.Control
         {
             if (useMovementLogging)
                 Task.Run(() => stateLogger.ForceLogAsync());
-        }
-
-        private void OnDrawGizmos()
-        {
-            if (body != null)
-            {
-                Gizmos.color = Color.cyan;
-                Gizmos.DrawSphere(body.worldCenterOfMass, 0.2f);
-                Gizmos.DrawRay(body.worldCenterOfMass, body.velocity);
-
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawRay(body.worldCenterOfMass, body.angularVelocity * 5);
-            }
- 
         }
     }
 }
