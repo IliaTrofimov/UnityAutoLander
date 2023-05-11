@@ -19,7 +19,7 @@ namespace Lander.CraftState
 
         public override BaseState NextState(MovementInfo newMovement)
         {
-            if (!newMovement.IsCollided)
+            if (!newMovement.IsCollided && newMovement.Height - movement.Height > 1)
                 return new FlyingState(newMovement, settings, true);
             else if (Vector3.Dot(newMovement.Normal, Vector3.up) <= 0.6)
                 return new CapsizedState(newMovement, settings);

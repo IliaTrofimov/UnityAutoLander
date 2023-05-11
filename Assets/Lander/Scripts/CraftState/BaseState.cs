@@ -29,6 +29,7 @@ namespace Lander.CraftState
         {
             isStateChanged = false;
             movement = newMovement;
+            createdAt = DateTime.Now;
             return this;
         }
 
