@@ -89,6 +89,8 @@ namespace Lander.Thrusters
             ToggleMain(0);
         }
 
+        public void ResetFuel() => fuel = MaxFuel;
+
         private void ToggleMain(float thrust)
         {
             if (thrust <= 0)
