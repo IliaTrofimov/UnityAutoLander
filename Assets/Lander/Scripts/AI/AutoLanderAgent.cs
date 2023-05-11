@@ -6,10 +6,13 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+using URandom = UnityEngine.Random;
+
 using Lander.Thrusters;
 using Lander.CraftState;
 using Lander.Control;
 using Lander.ProximitySensors;
+using Unity.MLAgents.Policies;
 
 namespace Lander.AI
 {
@@ -22,42 +25,37 @@ namespace Lander.AI
         private ProximitySensorsArray SensorsArray;
 
         [SerializeField]
-        private ThrustersController ThrustersController;
+        private NestedThrusterController ThrustersController;
 
         [SerializeField]
         private CraftManager CraftManager;
 
         [SerializeField]
-        private Rigidbody lander;
+        private Rigidbody Lander;
 
         [Header("Logging")]
         [SerializeField]
         private bool ShowRewardsLog;
 
-        [Header("Inital state")]
+        [Header("Initial state")]
         [SerializeField]
-        private Vector3 initialSpeed;
-
-        [SerializeField]
-        private Vector3 initialAngularSpeed;
-
-        [SerializeField]
-        private bool ShouldResetScene = true;
+        private AutoLanderAgentTrainingParams TrainingParams;
 
         private Vector3 initialPos;
-        private Quaternion initialRotation;
+        private Vector3 initialRotation;
         private List<ProximitySensor> sensors;
         private float? startHeight;
+        private static Vector3 half = new Vector3(0.5f, 0.5f, 0.5f);
 
 
-
-        public override void Initialize()
+        public void Start()
         {
+            initialPos = Lander.worldCenterOfMass;
+            initialRotation = Lander.transform.eulerAngles;
+
+            if (TrainingParams != null)
+                ResetParams();
             Rewards.UseLogging = ShowRewardsLog || Rewards.UseLogging;
-            initialPos = lander.position;
-            initialRotation = lander.transform.rotation;
-            initialSpeed = lander.velocity;
-            initialAngularSpeed = lander.angularVelocity;
         }
 
         public override void CollectObservations(VectorSensor sensor)
@@ -74,10 +72,10 @@ namespace Lander.AI
             sensor.AddObservation(state.Movement.AngularVelocity.x);
             sensor.AddObservation(state.Movement.AngularVelocity.y);
             sensor.AddObservation(state.Movement.AngularVelocity.z);
-            sensor.AddObservation(ThrustersController.Fuel);
+            //sensor.AddObservation(ThrustersController.Fuel);
             sensor.AddObservation(state.Movement.Height);
-            foreach (var s in SensorsArray.Sensors)
-                sensor.AddObservation(s.Distance);
+            //foreach (var s in SensorsArray.Sensors)
+            //    sensor.AddObservation(s.Distance);
         }
 
         public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -89,51 +87,58 @@ namespace Lander.AI
 
             ThrustersController.ApplyMovement(0, up, 0, pitch, yaw, roll);
 
-            if (CraftManager.State is FinalState)
+            if (CraftManager.State is FinalState || ThrustersController.Fuel == 0)
             {
-                if (CraftManager.State is FatalState || ThrustersController.Fuel == 0)
-                    AddReward(Rewards.FatalReward());
-                else if (CraftManager.State is LandedState)
+                if (CraftManager.State is LandedState)
                     AddReward(Rewards.LandedReward());
-
+                Debug.Log($"TOTAL REWARD: {this.GetCumulativeReward():F3} =========================");
                 EndEpisode();
             }
             else if (CraftManager.State is FlyingState)
-                AddReward(Rewards.FlyingReward(CraftManager.State.Movement));
+                AddReward(Rewards.FlyingReward3(CraftManager.State.Movement));
             else if (CraftManager.State is TouchedState)
                 AddReward(Rewards.FlyingReward(CraftManager.State.Movement));
             else if (CraftManager.State is FixationState)
                 AddReward(Rewards.FixationReward(CraftManager.State.Movement));
+
+            if (TrainingParams != null && TrainingParams.ShouldReset(Lander))
+            {
+                if (ShowRewardsLog)
+                    Debug.LogWarning("Out of training bounds"); 
+                EndEpisode();
+            }
         }
 
         public override void Heuristic(in ActionBuffers actionsOut)
         {
             var continuousActionsOut = actionsOut.ContinuousActions;
             continuousActionsOut[0] = Input.GetAxis("Jump");
-            continuousActionsOut[1] = Input.GetAxis("Pitch");
-            continuousActionsOut[2] = Input.GetAxis("Yaw");
-            continuousActionsOut[3] = Input.GetAxis("Roll");
+            continuousActionsOut[1] = Input.GetAxis("Pitch") * 0.3f;
+            continuousActionsOut[2] = Input.GetAxis("Yaw") * 0.3f;
+            continuousActionsOut[3] = Input.GetAxis("Roll") * 0.3f;
         }
 
         public override void OnEpisodeBegin()
         {
             startHeight = CraftManager.State.Movement.Height;
-            if (ShouldResetScene)
-            {
-                lander.transform.position = initialPos;
-                lander.velocity = initialSpeed;
-                lander.angularVelocity = initialAngularSpeed;
-                lander.transform.rotation = initialRotation;
 
-                ThrustersController.ResetFuel();
-                CraftManager.Reset();
-            }
+            if (TrainingParams != null && TrainingParams.ResetAfterEpisode)
+                ResetParams();
+
             base.OnEpisodeBegin();
         }
 
 
-        #region Rewards
-        
-        #endregion
+        private void ResetParams()
+        {
+            Lander.transform.position = initialPos + (URandom.insideUnitSphere - half) * TrainingParams.PositionDispersion;
+            Lander.transform.eulerAngles = initialRotation + (URandom.insideUnitSphere - half) * TrainingParams.RotationDispersion;
+
+            Lander.velocity = TrainingParams.InitialVelocity + (URandom.insideUnitSphere - half) * TrainingParams.VelocityDispersion;
+            Lander.angularVelocity = TrainingParams.InitialAngularVelocity + (URandom.insideUnitSphere - half) * TrainingParams.AngularVelocityDispersion;
+
+            ThrustersController.ResetFuel();
+            CraftManager.Reset();
+        }
     }
 }
