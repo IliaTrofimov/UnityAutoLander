@@ -6,20 +6,12 @@ using Lander.Shared;
 namespace Lander.ProximitySensors
 {
     /// <summary>Датчик высоты.</summary>
-    public sealed class HeightSensor : BaseProximitySensor, ILabeled<int>
+    public sealed class HeightSensor : BaseProximitySensor
     {
-        private AxisInfo.Axis Axis = AxisInfo.Axis.Y;
-        private AxisInfo.Direction Direction = AxisInfo.Direction.Negative;
-
         private void Start()
         {
-            direction = AxisInfo.GetVector(Axis, Direction);
+            direction = Vector3.down;
             sensorLaserColor = Color.blue;
-        }
-
-        public int GetLabel()
-        {
-            return 0;
         }
     }
 }

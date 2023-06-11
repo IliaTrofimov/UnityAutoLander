@@ -4,14 +4,17 @@ using UnityEngine;
 using UnityEngine.Events;
 using Lander.Thrusters;
 using GlobalShared;
+using Lander.Shared;
 
 namespace Lander.ProximitySensors
 {
-
     /// <summary>Базовый класс для всех сенсоров расстояния.</summary>
     public abstract class BaseProximitySensor : MonoBehaviour
     {
+        [Readonly]
+        [SerializeField]
         protected float distance = -1;
+
         protected Vector3 direction;
         protected Vector3 hitPosition;
 

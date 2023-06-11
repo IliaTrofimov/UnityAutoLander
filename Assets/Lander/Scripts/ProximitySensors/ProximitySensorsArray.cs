@@ -18,8 +18,7 @@ namespace Lander.ProximitySensors
 
         private void FixedUpdate()
         {
-            if (LogSensorData)
-                Debug.Log(string.Join("; ", Sensors.Select(kvp => $"{kvp.GetLabel().label}: {kvp.Distance:F0}")));
+            
         }
     }
 }
