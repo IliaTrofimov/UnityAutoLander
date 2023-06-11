@@ -1,10 +1,10 @@
 ﻿using System;
-
 using UnityEngine;
 
 namespace Lander.Thrusters
 {
-    public class RcsThrusterController : ManualThrustersController
+    /// <summary>Контроллер маневровых двигателей на пять направлений.</summary>
+    public class RcsThrustersController : BaseThrustersController
     {
         [SerializeField]
         private BaseThruster ThrusterUp = null;
@@ -21,11 +21,12 @@ namespace Lander.Thrusters
         [SerializeField]
         private BaseThruster ThrusterForward = null;
 
-        public float Fuel { get; set; }
-
 
 
         /// <summary><inheritdoc cref="BaseThrustersController.ApplyMovement(float, float, float, float, float, float)"/></summary>
+        /// <param name="moveX">Вспомогательные горизонтальные двигатели.</param>
+        /// <param name="moveY">Вспомогательные вертикальные двигатели.</param>
+        /// <param name="moveZ">Основной фронтальный двигатель.</param>
         /// <param name="rotX">НЕ ИСПОЛЬЗУЕТСЯ</param>
         /// <param name="rotY">НЕ ИСПОЛЬЗУЕТСЯ</param>
         /// <param name="rotZ">НЕ ИСПОЛЬЗУЕТСЯ</param>
@@ -36,21 +37,6 @@ namespace Lander.Thrusters
             Burn(ThrusterDown, -moveY);
             Burn(ThrusterUp, moveY);
             Burn(ThrusterForward, moveZ);
-        }
-
-        /// <summary><inheritdoc cref="ManualThrustersController.ApplyMovement(float[])"/></summary>
-        /// <param name="thrust">Left, Right, Top, Down, Forward</param>
-        /// <exception cref="ArgumentException"></exception>
-        public override void ApplyMovement(float[] thrust)
-        {
-            if (thrust.Length != 5)
-                throw new ArgumentException("Thrust array must have 5 elements", nameof(thrust));
-
-            Burn(ThrusterLeft, thrust[0]);
-            Burn(ThrusterRight, thrust[1]);
-            Burn(ThrusterDown, thrust[2]);
-            Burn(ThrusterUp, thrust[3]);
-            Burn(ThrusterForward, thrust[4]);
         }
 
         public override void Shutdown()
@@ -68,12 +54,12 @@ namespace Lander.Thrusters
             if (thruster == null)
                 return;
 
-            if (thrust > 0)
+            if (thrust > 0 && fuel >= thrust)
             {
-                Fuel -= thruster.MaxThrustValue * thrust;
+                fuel -= thruster.MaxThrustValue * thrust;
                 thruster.Burn(thrust);
             }
-            else
+            else 
                 thruster.Shutdown();
         }
     }

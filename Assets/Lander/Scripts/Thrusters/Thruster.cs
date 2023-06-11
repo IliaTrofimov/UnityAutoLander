@@ -7,17 +7,9 @@ using Lander.Shared;
 
 namespace Lander.Thrusters
 {
-
     [DisallowMultipleComponent]
-    public class ThrusterMK2 : BaseThruster
+    public class Thruster : BaseThruster
     {
-        [SerializeField]
-        private float maxThrustValue;
-
-        [SerializeField]
-        public PositionOnSpacecraft Position;
-
-        private float thrust;
         private ParticleSystem[] exhausts;
         private AudioSource[] sounds;
 
@@ -25,11 +17,7 @@ namespace Lander.Thrusters
         private Vector3 thrustNormalized;
         private Color vectorColor = Color.gray;
 
-        public override float MaxThrustValue => maxThrustValue;
-        public override float Thrust => thrust;
 
-
-        /// <summary>Выключение двигателя. Выключение всех эффектов и звуков.</summary>
         public override void Shutdown()
         {
             foreach (var e in exhausts.Where(e => e.isPlaying))
@@ -41,9 +29,11 @@ namespace Lander.Thrusters
             this.thrust = 0;
         }
 
-        /// <summary>Включение двигателя и применение тяги. Включение всех эффектов и звуков.</summary>
         public override void Burn(float thrust)
         {
+            if (thrust <= 0)
+                Shutdown();
+
             foreach (var e in exhausts.Where(e => !e.isPlaying))
                 e.Play();
             foreach (var s in sounds.Where(s => !s.isPlaying))
@@ -62,7 +52,7 @@ namespace Lander.Thrusters
             body = gameObject.GetComponentInParent<Rigidbody>();
             exhausts = gameObject.GetComponentsInChildren<ParticleSystem>();
             sounds = gameObject.GetComponentsInChildren<AudioSource>();
-            vectorColor = AxisInfo.GetColorForAxis(Position.Axis);
+            vectorColor = Color.red;
         }
 
         private void OnDrawGizmos()
