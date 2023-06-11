@@ -13,10 +13,10 @@ using Lander.CraftState;
 using Lander.Control;
 using Lander.ProximitySensors;
 using Unity.MLAgents.Policies;
+using GlobalShared;
 
 namespace Lander.AI
 {
-
     /// <summary>Агент ИИ для посадочного модуля.</summary>
     public class AutoLanderAgent : Agent
 	{
@@ -25,7 +25,7 @@ namespace Lander.AI
         private ProximitySensorsArray SensorsArray;
 
         [SerializeField]
-        private NestedThrusterController ThrustersController;
+        private RootThrustersController ThrustersController;
 
         [SerializeField]
         private CraftManager CraftManager;
@@ -37,15 +37,34 @@ namespace Lander.AI
         [SerializeField]
         private bool ShowRewardsLog;
 
-        [Header("Initial state")]
+        [SerializeField]
+        private bool UseLogging;
+
+        [SerializeField]
+        private string RewardLogsFile;
+
+        [SerializeField]
+        private string ActionsLogsFile;
+
+        [Header("Training")]
         [SerializeField]
         private AutoLanderAgentTrainingParams TrainingParams;
+
+        [SerializeField]
+        private bool ResetOnEpisode;
+
 
         private Vector3 initialPos;
         private Vector3 initialRotation;
         private List<ProximitySensor> sensors;
         private float? startHeight;
         private static Vector3 half = new Vector3(0.5f, 0.5f, 0.5f);
+
+        private FlyingReward flyingReward;
+        private FixationReward fixationReward;
+        private FinalReward fatalReward;
+        private FinalReward landedReward;
+        private ArrayLogger<float> actionsLogger;
 
 
         public void Start()
@@ -55,7 +74,23 @@ namespace Lander.AI
 
             if (TrainingParams != null)
                 ResetParams();
-            Rewards.UseLogging = ShowRewardsLog || Rewards.UseLogging;
+
+            if (UseLogging)
+            {
+                actionsLogger = new ArrayLogger<float>($"{ActionsLogsFile}/{CraftManager.Name}.csv", 200, new System.TimeSpan(0, 0, 5));
+                flyingReward = new FlyingReward(1, 1, 1, RewardLogsFile);
+                fixationReward = new FixationReward(1, 1, RewardLogsFile);
+                fatalReward = new FinalReward(-1000, RewardLogsFile);
+                landedReward = new FinalReward(1000, RewardLogsFile);
+
+            }
+            else
+            {
+                flyingReward = new FlyingReward(1, 1, 1);
+                fixationReward = new FixationReward(1, 1);
+                fatalReward = new FinalReward(-1000);
+                landedReward = new FinalReward(1000);
+            }
         }
 
         public override void CollectObservations(VectorSensor sensor)
@@ -72,10 +107,7 @@ namespace Lander.AI
             sensor.AddObservation(state.Movement.AngularVelocity.x);
             sensor.AddObservation(state.Movement.AngularVelocity.y);
             sensor.AddObservation(state.Movement.AngularVelocity.z);
-            //sensor.AddObservation(ThrustersController.Fuel);
             sensor.AddObservation(state.Movement.Height);
-            //foreach (var s in SensorsArray.Sensors)
-            //    sensor.AddObservation(s.Distance);
         }
 
         public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -85,26 +117,27 @@ namespace Lander.AI
             float yaw = actionBuffers.ContinuousActions[2];
             float roll = actionBuffers.ContinuousActions[3];
 
+            if (actionsLogger != null)
+                actionsLogger.Log(up, pitch, yaw, roll);
             ThrustersController.ApplyMovement(0, up, 0, pitch, yaw, roll);
 
             if (CraftManager.State is FinalState || ThrustersController.Fuel == 0)
             {
                 if (CraftManager.State is LandedState)
-                    AddReward(Rewards.LandedReward());
-                Debug.Log($"TOTAL REWARD: {this.GetCumulativeReward():F3} =========================");
+                    AddReward(landedReward.GetReward(CraftManager.State.Movement));
                 EndEpisode();
             }
             else if (CraftManager.State is FlyingState)
-                AddReward(Rewards.FlyingReward3(CraftManager.State.Movement));
+                AddReward(flyingReward.GetReward(CraftManager.State.Movement));
             else if (CraftManager.State is TouchedState)
-                AddReward(Rewards.FlyingReward(CraftManager.State.Movement));
+                AddReward(fixationReward.GetReward(CraftManager.State.Movement));
             else if (CraftManager.State is FixationState)
-                AddReward(Rewards.FixationReward(CraftManager.State.Movement));
+                AddReward(fixationReward.GetReward(CraftManager.State.Movement));
 
             if (TrainingParams != null && TrainingParams.ShouldReset(Lander))
             {
                 if (ShowRewardsLog)
-                    Debug.LogWarning("Out of training bounds"); 
+                    Debug.LogWarning("Out of training bounds");
                 EndEpisode();
             }
         }
@@ -122,7 +155,7 @@ namespace Lander.AI
         {
             startHeight = CraftManager.State.Movement.Height;
 
-            if (TrainingParams != null && TrainingParams.ResetAfterEpisode)
+            if (TrainingParams != null && ResetOnEpisode)
                 ResetParams();
 
             base.OnEpisodeBegin();
