@@ -3,6 +3,7 @@
 
 namespace Lander.Shared
 {
+    /// <summary>Информация о движении СА.</summary>
     public class MovementInfo
     {
         public bool IsCollided { get; set; }

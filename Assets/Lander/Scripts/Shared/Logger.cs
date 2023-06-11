@@ -7,10 +7,34 @@ using System.Collections.Generic;
 
 namespace GlobalShared
 {
+    public class ArrayLogger<T> : Logger<T[]>
+    {
+        public ArrayLogger(string filename, int maxItemsWaiting, TimeSpan maxWaitingTime, string separator = ";")
+            : base(filename, maxItemsWaiting, maxWaitingTime, (T[] arr) => string.Join(separator, arr))
+        {
+        }
+
+        /// <summary>Записать данные в журнал.</summary>
+        public new void Log(params T[] data)
+        {
+            base.Log(data);
+        }
+
+        /// <summary><inheritdoc cref="Log(T)"/></summary>
+        public new async Task LogAsync(params T[] data)
+        {
+            await base.LogAsync(data);
+        }
+    }
+
     /// <summary>Файловый логгер с возможностью отложенной записи в файл.</summary>
     /// <typeparam name="T">Тип сохраняемых данных.</typeparam>
     public class Logger<T>
     {
+        private static object locker = new();
+
+        private static HashSet<string> files = new();
+
         protected LinkedList<T> cachedItems = new(); 
 
         protected Func<T, string> stringConverter = (T data) => data.ToString();
@@ -28,12 +52,14 @@ namespace GlobalShared
         public Logger(string filename, int maxItemsWaiting, TimeSpan maxWaitingTime, Func<T, string> stringConverter)
             : this(filename, maxItemsWaiting, maxWaitingTime)
         {
+            files.Add(filename);
             this.stringConverter = stringConverter;
         }
 
         public Logger(string filename, int maxItemsWaiting, TimeSpan maxWaitingTime)
             : this(filename)
         {
+            files.Add(filename);
             MaxItemsWaiting = maxItemsWaiting;
             MaxWaitingTime = maxWaitingTime;
         }
@@ -41,13 +67,16 @@ namespace GlobalShared
         public Logger(string filename, Func<T, string> stringConverter)
             : this(filename)
         {
+            files.Add(filename);
             this.stringConverter = stringConverter;
         }
 
         public Logger(string filename)
         {
+            files.Add(filename);
             Filename = filename;
-            File.Create(filename);
+            if (!File.Exists(filename))
+                File.Create(filename);
         }
 
 
@@ -62,7 +91,11 @@ namespace GlobalShared
             else
             {
                 cachedItems.AddLast(data);
-                File.AppendAllLines(Filename, cachedItems.Select(stringConverter));
+
+                lock (locker)
+                {
+                    File.AppendAllLines(Filename, cachedItems.Select(stringConverter));
+                }
                 cachedItems.Clear();
                 lastLogTime = DateTime.Now;
             }
