@@ -27,10 +27,10 @@ namespace Lander.Control
 
         [Header("Logging")]
         [SerializeField]
-        private bool showStateLog;
+        private bool useTelemetryLogging;
 
         [SerializeField]
-        private bool useMovementLogging;
+        private string telemetryLogsFile;
 
         [Header("Craft parameters")]
         [SerializeField]
@@ -50,7 +50,8 @@ namespace Lander.Control
 
         public BaseState State => state;
         public StateSettings StateSettings => stateSettings;
-
+        public string Name => gameObject.name;
+       
 
         public void Reset()
         {
@@ -76,22 +77,21 @@ namespace Lander.Control
 
         private void LogState()
         {
-            if (showStateLog && state.IsStateChanged)
-                Debug.Log($"{state,-10} {movement}");
-            if (useMovementLogging)
+            if (useTelemetryLogging)
                Task.Run(() => stateLogger.LogAsync(state));
         }
 
         private void Start()
         {
-            stateLogger = new Logger<BaseState>($"/Users/iliat/Documents/{gameObject.name}_movement.csv", 100, new TimeSpan(0,1,0),
-                 s =>
-                    $"{s.Movement.Position.x:F3},{s.Movement.Position.y:F3},{s.Movement.Position.z:F3},{s.Movement.Height:F3}," +
-                    $"{s.Movement.Normal.x:F3},{s.Movement.Normal.y:F3},{s.Movement.Normal.z:F3}," +
-                    $"{s.Movement.Velocity.x:F3},{s.Movement.Velocity.y:F3},{s.Movement.Velocity.z:F3}," +
-                    $"{s.Movement.AngularVelocity.x:F3},{s.Movement.AngularVelocity.y:F3},{s.Movement.AngularVelocity.z:F3}," +
-                    $"{s.Movement.IsCollided},{s.Name}"
-            );
+            if (useTelemetryLogging)
+                stateLogger = new Logger<BaseState>($"{telemetryLogsFile}/{gameObject.name}.csv", 100, new TimeSpan(0,1,0),
+                     s =>
+                        $"{s.Movement.Position.x:F3};{s.Movement.Position.y:F3};{s.Movement.Position.z:F3};{s.Movement.Height:F3};" +
+                        $"{s.Movement.Normal.x:F3};{s.Movement.Normal.y:F3};{s.Movement.Normal.z:F3};" +
+                        $"{s.Movement.Velocity.x:F3};{s.Movement.Velocity.y:F3};{s.Movement.Velocity.z:F3};" +
+                        $"{s.Movement.AngularVelocity.x:F3};{s.Movement.AngularVelocity.y:F3};{s.Movement.AngularVelocity.z:F3};" +
+                        $"{s.Movement.IsCollided};{s.Name}"
+                );
 
             body = gameObject.GetComponent<Rigidbody>();
             heightSensor = gameObject.GetComponentInChildren<HeightSensor>();
@@ -127,7 +127,7 @@ namespace Lander.Control
 
         private void OnApplicationQuit()
         {
-            if (useMovementLogging)
+            if (useTelemetryLogging)
                 Task.Run(() => stateLogger.ForceLogAsync());
         }
     }
