@@ -3,14 +3,14 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using UnityEngine;
+using UnityEditor;
 
-using GlobalShared;
 using Lander.Shared;
 using Lander.Thrusters;
 using Lander.CraftState;
 using Lander.ProximitySensors;
 using System.Collections.Generic;
-using UnityEditor;
+
 
 namespace Lander.Control
 {
@@ -46,7 +46,7 @@ namespace Lander.Control
         private Rigidbody body;
         private MovementInfo movement;
         private BaseState state;
-        private GlobalShared.Logger<BaseState> stateLogger;
+        private Logger<BaseState> stateLogger;
 
         public BaseState State => state;
         public StateSettings StateSettings => stateSettings;
@@ -78,13 +78,13 @@ namespace Lander.Control
         private void LogState()
         {
             if (useTelemetryLogging)
-               Task.Run(() => stateLogger.LogAsync(state));
+               stateLogger.Log(state);
         }
 
         private void Start()
         {
             if (useTelemetryLogging)
-                stateLogger = new Logger<BaseState>($"{telemetryLogsFile}/{gameObject.name}.csv", 100, new TimeSpan(0,1,0),
+                stateLogger = new Logger<BaseState>($"{telemetryLogsFile}/{gameObject.name}.csv", 10,
                      s =>
                         $"{s.Movement.Position.x:F3};{s.Movement.Position.y:F3};{s.Movement.Position.z:F3};{s.Movement.Height:F3};" +
                         $"{s.Movement.Normal.x:F3};{s.Movement.Normal.y:F3};{s.Movement.Normal.z:F3};" +
@@ -103,12 +103,6 @@ namespace Lander.Control
 
         private void FixedUpdate()
         {
-            if (body != null)
-            {
-                Debug.DrawRay(body.worldCenterOfMass, body.velocity, Color.cyan);
-                Debug.DrawRay(body.worldCenterOfMass, body.angularVelocity * 20, Color.magenta);
-                Debug.DrawRay(body.worldCenterOfMass, -body.transform.up * 50, Color.white);
-            }
             state = state.NextState(ResetMovement());
             LogState();
         }
@@ -128,7 +122,7 @@ namespace Lander.Control
         private void OnApplicationQuit()
         {
             if (useTelemetryLogging)
-                Task.Run(() => stateLogger.ForceLogAsync());
+                stateLogger.ForceLog(state);
         }
     }
 }
