@@ -88,7 +88,6 @@ namespace Lander.AI
         {
             var state = CraftManager.State;
 
-            // 3 + 3 + 3 + 1 + 1 + 5 = 16
             sensor.AddObservation(state.Movement.Normal.x);
             sensor.AddObservation(state.Movement.Normal.y);
             sensor.AddObservation(state.Movement.Normal.z);
