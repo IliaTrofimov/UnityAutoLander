@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿
+
+using UnityEngine;
 using UnityEditor;
 using System;
 
 namespace Lander.Shared
 {
-
+#if UNITY_EDITOR
     /// <summary>
     /// This class contain custom drawer for ReadOnly attribute.
     /// </summary>
@@ -25,7 +27,7 @@ namespace Lander.Shared
         }
     }
 
-
+#endif
     /// <summary>Атрибут для отображения свойства в редакторе без возможности редактирования.</summary>
     public sealed class ReadonlyAttribute : PropertyAttribute
     {

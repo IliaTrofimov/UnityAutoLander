@@ -4,6 +4,10 @@ namespace Lander.Shared
 {
     public static class MathUtils
     {
+        public static readonly Vector3 half = new Vector3(0.5f, 0.5f, 0.5f);
+        public static readonly System.Random random = new();
+
+
         /// <summary>Функция <c>pos(x) = {x, x&gt;0 v 0, иначе}</c></summary>
         public static float Pos(float x) => x >= 0 ? x : 0;
 
@@ -27,5 +31,13 @@ namespace Lander.Shared
         public static string ShortFormat(this Vector3 v) =>
             $"<{v.x.ShortFormat()}, {v.y.ShortFormat()}, {v.z.ShortFormat()}>";
 
+        public static Vector3 RandomVector3(Vector3 mean, float dispersion = 1.0f) =>
+            RandomVector3() * dispersion + mean;
+
+        public static Vector3 RandomVector3(float mean, float dispersion = 1.0f) =>
+            RandomVector3() * dispersion + Vector3.one * mean;
+
+        public static Vector3 RandomVector3() =>
+            new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
     }
 }
