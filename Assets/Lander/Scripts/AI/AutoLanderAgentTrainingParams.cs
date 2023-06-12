@@ -36,6 +36,9 @@ namespace Lander.AI
         [Range(0f, 10000f)]
         public float MaxVerticalDistance;
 
+        [Range(10, 300)]
+        public int MaxEpisodeSeconds = 60;
+
 
         public bool ShouldReset(Rigidbody body) =>
             (MaxHorizontalDistance != 0 &&
