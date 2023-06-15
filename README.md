@@ -6,7 +6,7 @@ My attempt to create autonomous lunar landing model in Unity. In this project I 
 This project is inspired by Kerbal Space Program (mainly the idea of the navball). Also terrain generation was taken from 
 Sebastian Lague's [Procedural Landmass Generation](https://github.com/SebLague/Procedural-Landmass-Generation).
 
-I will improve it someday, maybe...
+I will improve it someday, *maybe...*
 
 ![Screenshot_2023-06-14_00-04-52](https://github.com/IliaTrofimov/UnityAutoLander/assets/39233120/8fc2d976-bd93-4ce1-b64d-e8c61d726f50)
 ![Screenshot_2023-06-13_23-54-442](https://github.com/IliaTrofimov/UnityAutoLander/assets/39233120/dfbb8752-fce0-4c2d-8f72-05d16d10182c)
