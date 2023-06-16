@@ -58,12 +58,28 @@ namespace Lander.Control
             state = new FlyingState(ResetMovement(), settings: stateSettings).NextState(movement); 
         }
 
-        private MovementInfo ResetMovement(bool? isCollided = null)
+        private MovementInfo ResetMovement(bool isCollided)
         {
             if (movement == null)
                 movement = new MovementInfo();
 
-            movement.IsCollided = isCollided ?? movement.IsCollided;
+            movement.IsCollided = isCollided;
+            movement.Position = body.worldCenterOfMass;
+            movement.Velocity = body.velocity;
+            movement.Normal = body.transform.up;
+            movement.AngularVelocity = body.angularVelocity;
+            movement.Height = heightSensor == null
+                ? float.PositiveInfinity
+                : heightSensor.Distance;
+
+            return movement;
+        }
+
+        private MovementInfo ResetMovement()
+        {
+            if (movement == null)
+                movement = new MovementInfo();
+
             movement.Position = body.worldCenterOfMass;
             movement.Velocity = body.velocity;
             movement.Normal = body.transform.up;
@@ -84,7 +100,7 @@ namespace Lander.Control
         private void Start()
         {
             if (useTelemetryLogging)
-                stateLogger = new Logger<BaseState>($"{telemetryLogsFile}/{gameObject.name}.csv", 10,
+                stateLogger = new Logger<BaseState>($"{telemetryLogsFile}/{gameObject.name}.csv", 5,
                      s =>
                         $"{s.Movement.Position.x:F3};{s.Movement.Position.y:F3};{s.Movement.Position.z:F3};{s.Movement.Height:F3};" +
                         $"{s.Movement.Normal.x:F3};{s.Movement.Normal.y:F3};{s.Movement.Normal.z:F3};" +

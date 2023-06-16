@@ -54,15 +54,14 @@ namespace Lander.Shared
 
         public int SkipItems { get; private set; } = 0;
         private int skip = 0;
-        private long loggingStart = DateTime.Now.Ticks;
+        private DateTime loggingStart = DateTime.Now;
 
         public Logger(string filename, int skip, Func<T, string> stringConverter)
         {
             SkipItems = skip;
             Filename = filename;
 
-            if (!File.Exists(filename) && files.Add(Filename))
-                File.Create(filename);
+            File.Create(filename);
             this.stringConverter = stringConverter;
         }
 
@@ -72,7 +71,7 @@ namespace Lander.Shared
         {
             if (skip == SkipItems)
             {
-                File.AppendAllText(Filename, $"{DateTime.Now.Ticks - loggingStart};{stringConverter(data)}\n");
+                File.AppendAllText(Filename, $"{DateTime.Now - loggingStart};{stringConverter(data)}\n");
                 skip = 0;
             }
             else
@@ -86,7 +85,7 @@ namespace Lander.Shared
         {
             if (skip == SkipItems)
             {
-                await File.AppendAllTextAsync(Filename, $"{DateTime.Now.Ticks - loggingStart};{stringConverter(data)}\n");
+                await File.AppendAllTextAsync(Filename, $"{DateTime.Now - loggingStart};{stringConverter(data)}\n");
                 skip = 0;
             }
             else
@@ -98,14 +97,14 @@ namespace Lander.Shared
         /// <summary>Принудительно выгрузить журнал в файл.</summary>
         public virtual void ForceLog(T data)
         {
-            File.AppendAllText(Filename, $"{DateTime.Now.Ticks - loggingStart};{stringConverter(data)}\n");
+            File.AppendAllText(Filename, $"{DateTime.Now - loggingStart};{stringConverter(data)}\n");
             skip = 0;
         }
 
         /// <summary><inheritdoc cref="ForceLog()"/></summary>
         public virtual async Task ForceLogAsync(T data)
         {
-            await File.AppendAllTextAsync(Filename, $"{DateTime.Now.Ticks - loggingStart};{stringConverter(data)}\n");
+            await File.AppendAllTextAsync(Filename, $"{DateTime.Now - loggingStart};{stringConverter(data)}\n");
             skip = 0;
         }
     }

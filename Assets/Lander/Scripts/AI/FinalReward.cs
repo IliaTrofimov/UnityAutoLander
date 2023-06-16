@@ -7,15 +7,12 @@ namespace Lander.AI
     {
         private readonly float reward = 1000;
 
-        public FinalReward(float reward)
+        public FinalReward(float reward, bool displayRewards = false)
+            : base(displayRewards)
         {
             this.reward = reward;
         }
 
-        public FinalReward(float reward, string rewardLogsFile) : base(rewardLogsFile)
-        {
-            this.reward = reward;
-        }
 
         protected override float[] GetRewardsVector(MovementInfo movement) => new float[] { reward };
     }

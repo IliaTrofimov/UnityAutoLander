@@ -16,6 +16,7 @@ using Lander.Shared;
 
 namespace Lander.AI
 {
+    [RequireComponent(typeof(CraftManager), typeof(Rigidbody), typeof(BaseThrustersController))]
     /// <summary>Агент ИИ для посадочного модуля.</summary>
     public class AutoLanderAgent : Agent
 	{
@@ -45,6 +46,9 @@ namespace Lander.AI
         [SerializeField]
         private string RewardLogsFile;
 
+        [SerializeField]
+        private bool DisplayRewards;
+
 
         [Header("Training")]
         [SerializeField]
@@ -60,12 +64,16 @@ namespace Lander.AI
         private float? startHeight;
         private static Vector3 half = new Vector3(0.5f, 0.5f, 0.5f);
 
-        private FlyingReward flyingReward;
-        private FixationReward fixationReward;
-        private FinalReward fatalReward;
-        private FinalReward landedReward;
+        private FlyingReward flyingReward = new FlyingReward(1, 1, 0.2f, 1);
+        private FixationReward fixationReward = new FixationReward(1, 1, 1);
+        private FinalReward fatalReward = new FinalReward(-1000);
+        private FinalReward landedReward = new FinalReward(1000);
         private ArrayLogger<float> actionsLogger;
+        private Logger<float> rewardsLogger;
+
         private DateTime episodeStart;
+        private bool firstReset;
+
 
         public void Start()
         {
@@ -73,15 +81,18 @@ namespace Lander.AI
             initialRotation = Lander.transform.eulerAngles;
 
             if (TrainingParams != null)
-                ResetParams();
+                firstReset = true;
 
             if (UseActionLogging)
-                actionsLogger = new ArrayLogger<float>($"{ActionsLogsFile}/{CraftManager.Name}.csv", 50);
+                actionsLogger = new ArrayLogger<float>($"{ActionsLogsFile}/{CraftManager.Name}.csv", 10);
 
-            flyingReward = new FlyingReward(1, 1, 1);
-            fixationReward = new FixationReward(1, 1);
-            fatalReward = new FinalReward(-1000);
-            landedReward = new FinalReward(1000);
+            if (UseRewardsLogging)
+                rewardsLogger = new Logger<float>($"{RewardLogsFile}/{CraftManager.Name}.csv", 10, (f) => $"{f:F3}");
+
+            flyingReward.displayRewards = DisplayRewards;
+            fixationReward.displayRewards = DisplayRewards;
+            landedReward.displayRewards = DisplayRewards;
+            fatalReward.displayRewards = DisplayRewards;
         }
 
         public override void CollectObservations(VectorSensor sensor)
@@ -112,20 +123,22 @@ namespace Lander.AI
                 actionsLogger.Log(up, pitch, yaw, roll);
             ThrustersController.ApplyMovement(0, up, 0, pitch, yaw, roll);
 
+
+            float reward = 0;
             if (CraftManager.State is FinalState || ThrustersController.Fuel == 0)
             {
                 if (CraftManager.State is LandedState)
-                    AddReward(landedReward.GetReward(CraftManager.State.Movement));
+                    AddReward(reward = landedReward.GetReward(CraftManager.State.Movement));
 
                 Debug.Log($"{Lander.name} is in final sate ({CraftManager.State})");
                 EndEpisode();
             }
             else if (CraftManager.State is FlyingState)
-                AddReward(flyingReward.GetReward(CraftManager.State.Movement));
+                AddReward(reward = flyingReward.GetReward(CraftManager.State.Movement));
             else if (CraftManager.State is TouchedState)
-                AddReward(fixationReward.GetReward(CraftManager.State.Movement));
+                AddReward(reward = fixationReward.GetReward(CraftManager.State.Movement));
             else if (CraftManager.State is FixationState)
-                AddReward(fixationReward.GetReward(CraftManager.State.Movement));
+                AddReward(reward = fixationReward.GetReward(CraftManager.State.Movement));
 
             if (TrainingParams != null && TrainingParams.ShouldReset(Lander))
             {
@@ -143,6 +156,7 @@ namespace Lander.AI
         public override void Heuristic(in ActionBuffers actionsOut)
         {
             var continuousActionsOut = actionsOut.ContinuousActions;
+            
             continuousActionsOut[0] = Input.GetAxis("Jump");
             continuousActionsOut[1] = Input.GetAxis("Pitch") * 0.3f;
             continuousActionsOut[2] = Input.GetAxis("Yaw") * 0.3f;
@@ -154,7 +168,7 @@ namespace Lander.AI
         {
             startHeight = CraftManager.State.Movement.Height;
 
-            if (TrainingParams != null && ResetOnEpisode)
+            if (TrainingParams != null && (ResetOnEpisode || firstReset))
                 ResetParams();
 
             episodeStart = DateTime.Now;
@@ -164,13 +178,12 @@ namespace Lander.AI
 
         private void ResetParams()
         {
+            firstReset = false;
             Lander.transform.position = MathUtils.RandomVector3(initialPos, TrainingParams.PositionDispersion);
             Lander.transform.eulerAngles = MathUtils.RandomVector3(initialRotation, TrainingParams.RotationDispersion);
 
             Lander.velocity = MathUtils.RandomVector3(TrainingParams.InitialVelocity, TrainingParams.VelocityDispersion);
             Lander.angularVelocity = MathUtils.RandomVector3(TrainingParams.InitialAngularVelocity, TrainingParams.AngularVelocityDispersion);
-
-            Debug.Log($"{Lander.name} training reset: pos={Lander.position.ShortFormat()} r={Lander.transform.eulerAngles.ShortFormat()} v={Lander.velocity.ShortFormat()} w={Lander.angularVelocity.ShortFormat()}");
 
             ThrustersController.ResetFuel();
             CraftManager.Reset();

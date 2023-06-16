@@ -1,10 +1,8 @@
 ﻿using System;
 using UnityEngine;
 
-
 namespace Lander.Shared
 {
-
     public enum Axis { X = 0, Z = 1, Y = 2 }
 
     public enum Direction
