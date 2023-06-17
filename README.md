@@ -3,7 +3,7 @@ My attempt to create autonomous lunar landing model in Unity. In this project I 
 - Space lander physical model (main and RCS thrusters)
 - AI for autonomous landing with [Unity ML-Agents](https://unity.com/ru/products/machine-learning-agents) (*the neural network is poorly trained and requires a lot of improvements*)
 
-See [releases](https://github.com/IliaTrofimov/UnityAutoLander/releases) to try some demos yourself.
+See [releases](https://github.com/IliaTrofimov/UnityAutoLander/releases) or [WebGL build](https://github.com/IliaTrofimov/UnityAutoLander/blob/main/WebGLBuild/demo_web/index.html) to try some demos yourself.
 
 
 This project is inspired by Kerbal Space Program (mainly the idea of the navball). Also terrain generation was taken from 
