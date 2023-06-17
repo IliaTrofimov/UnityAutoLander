@@ -11,7 +11,14 @@ Sebastian Lague's [Procedural Landmass Generation](https://github.com/SebLague/P
 
 I will improve it someday, *maybe...*
 
+## Screenshots
 ![Screenshot_2023-06-14_00-04-52](https://github.com/IliaTrofimov/UnityAutoLander/assets/39233120/8fc2d976-bd93-4ce1-b64d-e8c61d726f50)
 ![Screenshot_2023-06-13_23-54-442](https://github.com/IliaTrofimov/UnityAutoLander/assets/39233120/dfbb8752-fce0-4c2d-8f72-05d16d10182c)
 ![Screenshot_2023-06-13_23-19-48](https://github.com/IliaTrofimov/UnityAutoLander/assets/39233120/559f242c-0dcb-4443-b40d-6f9955479d75)
+
+## Demo records
+*The framerate is low to make gifs smaller*
+
+![Untitled_3](https://github.com/IliaTrofimov/UnityAutoLander/assets/39233120/4ba90ec7-e453-417e-904e-ac1406581a34)
+![Untitled_2](https://github.com/IliaTrofimov/UnityAutoLander/assets/39233120/d4d0ac5d-2280-4060-b293-749f9c4f230c)
 
